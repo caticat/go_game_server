@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func ListenAndServe(port int, fun func(net.Conn)) {
+func ListenAndServe(port int, socketMgr PSocketManager) {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
 		log.Panic(err)
@@ -18,6 +18,6 @@ func ListenAndServe(port int, fun func(net.Conn)) {
 			log.Print(err)
 			continue
 		}
-		fun(conn)
+		socketMgr.OnConnect(conn)
 	}
 }

@@ -10,9 +10,10 @@ import (
 const PSocket_ChanLen = 10 // 收发消息阻塞长度
 
 type PSocket struct {
-	m_conn    net.Conn
-	m_chaSend chan *PMessage
-	m_chaRecv chan *PMessage
+	m_conn      net.Conn
+	m_chaSend   chan *PMessage
+	m_chaRecv   chan *PMessage
+	m_sessionID int64
 }
 
 func (t *PSocket) getConn() net.Conn {
@@ -26,6 +27,10 @@ func (t *PSocket) getChaSend() chan *PMessage {
 func (t *PSocket) getChaRecv() chan *PMessage {
 	return t.m_chaRecv
 }
+
+func (t *PSocket) GetSessionID() int64 { return t.m_sessionID }
+
+func (t *PSocket) SetSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
 func (t PSocket) New(c net.Conn, chaRecv chan *PMessage) *PSocket {
 	t.m_conn = c
@@ -70,7 +75,7 @@ func (t *PSocket) runRecv() {
 		}
 
 		// 读取数据体
-		p, l := PMessage{}.NewByHead(bufferHead)
+		p, l := PMessage{}.NewByHead(bufferHead, t.GetSessionID())
 		bufferBody := make([]byte, l)
 		_, err = io.ReadFull(r, bufferBody)
 		if err != nil {
