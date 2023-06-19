@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/caticat/go_game_server/plog"
@@ -31,9 +30,8 @@ func run() {
 	chaRecv := getSocketManager().getChaRecv()
 	for {
 		select {
-		case m := <-chaRecv:
-			getMessageManager().Trigger()
-			fmt.Println("recv msg:", m)
+		case r := <-chaRecv:
+			getMessageManager().Trigger(r)
 		case <-t:
 			time.Sleep(50 * time.Millisecond)
 		}

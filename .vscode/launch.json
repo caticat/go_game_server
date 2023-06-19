@@ -5,19 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch App",
+			"name": "Launch Server",
 			"type": "go",
 			"request": "launch",
 			"mode": "auto",
-			"program": "app"
+			"program": "example/server"
 			// "program": "${fileDirname}"
 		},
 		{
-			"name": "Launch ClientTest",
+			"name": "Launch Client",
 			"type": "go",
 			"request": "launch",
 			"mode": "auto",
-			"program": "client_test"
+			"program": "example/client"
 		},
 	]
 }

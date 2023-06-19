@@ -2,10 +2,7 @@ package pnet
 
 import "log"
 
-type messageHandler_t struct {
-	needSoasdf
-	fun func(*PSocket, *PMessage) bool
-}
+type messageHandler_t func(*PRecvData) bool
 
 type PMessageManager struct {
 	m_mapMsgIDHandler map[int32]messageHandler_t
@@ -20,11 +17,12 @@ func (t *PMessageManager) Regist(msgID int32, fun messageHandler_t) {
 	t.m_mapMsgIDHandler[msgID] = fun
 }
 
-func (t *PMessageManager) Trigger(s *PSocket, m *PMessage) bool {
-	if s == nil {
-		log.Printf("s == nil")
+func (t *PMessageManager) Trigger(r *PRecvData) bool {
+	if r == nil {
+		log.Printf("r == nil")
 		return false
 	}
+	m := r.GetMessage()
 	if m == nil {
 		log.Printf("m == nil")
 		return false
@@ -36,5 +34,5 @@ func (t *PMessageManager) Trigger(s *PSocket, m *PMessage) bool {
 		return false
 	}
 
-	return fun(s, m)
+	return fun(r)
 }

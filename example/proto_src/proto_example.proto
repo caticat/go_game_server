@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "proto_error.proto";
+
+package ProtoExample;
+
+message HelloReq
+{
+	string msg = 1;
+}
+message HelloAck
+{
+	ErrorCode error = 1;
+	string msg = 2;
+}

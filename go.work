@@ -1,8 +1,9 @@
 go 1.20
 
 use (
-	./example/server
 	./example/client
+	./example/proto
+	./example/server
 	./plog
 	./pnet
 )

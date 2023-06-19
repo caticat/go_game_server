@@ -12,7 +12,7 @@ const PSocket_ChanLen = 10 // 收发消息阻塞长度
 type PSocket struct {
 	m_conn      net.Conn
 	m_chaSend   chan *PMessage
-	m_chaRecv   chan *PMessage
+	m_chaRecv   chan *PRecvData
 	m_sessionID int64
 }
 
@@ -24,7 +24,7 @@ func (t *PSocket) getChaSend() chan *PMessage {
 	return t.m_chaSend
 }
 
-func (t *PSocket) getChaRecv() chan *PMessage {
+func (t *PSocket) getChaRecv() chan *PRecvData {
 	return t.m_chaRecv
 }
 
@@ -32,7 +32,7 @@ func (t *PSocket) GetSessionID() int64 { return t.m_sessionID }
 
 func (t *PSocket) SetSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
-func (t PSocket) New(c net.Conn, chaRecv chan *PMessage) *PSocket {
+func (t PSocket) New(c net.Conn, chaRecv chan *PRecvData) *PSocket {
 	t.m_conn = c
 	t.m_chaSend = make(chan *PMessage, PSocket_ChanLen)
 	t.m_chaRecv = chaRecv
@@ -83,16 +83,16 @@ func (t *PSocket) runRecv() {
 			t.Close()
 			break
 		}
-		p.ParseFromString(string(bufferBody))
+		p.SetMsgData(string(bufferBody))
 
 		// 返回
-		chaRecv <- p
+		chaRecv <- PRecvData{}.New(t, p)
 	}
 }
 
 func (t *PSocket) send(data *PMessage) {
 	// bufio.NewReader(t.getConn())
-	sliData := []byte(data.SerializeAsString())
+	sliData := []byte(data.Marshal())
 
 	conn := t.getConn()
 	lenWaitSend := len(sliData)

@@ -12,19 +12,21 @@ import (
 type SocketManager struct {
 	m_mapSocketPre map[*pnet.PSocket]bool  // 无sessionID连接
 	m_mapSocket    map[int64]*pnet.PSocket // 有sessionID连接
-	m_chaRecv      chan *pnet.PMessage
+	m_chaRecv      chan *pnet.PRecvData
 }
 
-func (t *SocketManager) getChaRecv() chan *pnet.PMessage { return t.m_chaRecv }
+func (t *SocketManager) getChaRecv() chan *pnet.PRecvData { return t.m_chaRecv }
 
 func (t SocketManager) New() *SocketManager {
 	t.m_mapSocketPre = make(map[*pnet.PSocket]bool)
-	t.m_chaRecv = make(chan *pnet.PMessage, ChaRecvLen)
+	t.m_chaRecv = make(chan *pnet.PRecvData, ChaRecvLen)
 	return &t
 }
 
 func (t *SocketManager) OnConnect(conn net.Conn) {
-	t.m_mapSocketPre[pnet.PSocket{}.New(conn, t.getChaRecv())] = true
+	s := pnet.PSocket{}.New(conn, t.getChaRecv())
+	s.Start()
+	t.m_mapSocketPre[s] = true
 }
 
 func (t *SocketManager) Add(s *pnet.PSocket) {

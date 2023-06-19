@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
+
+	"github.com/golang/protobuf/proto"
 )
 
 type PMessage struct {
 	m_msgID   int32
-	m_msgData string // TODO: 临时类型,待修改
+	m_msgData []byte
 
 	m_sessionID int64 // 会话唯一ID
 }
@@ -17,9 +20,14 @@ func (t *PMessage) GetMsgID() int32              { return t.m_msgID }
 func (t *PMessage) GetSessionID() int64          { return t.m_sessionID }
 func (t *PMessage) setSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
-func (t PMessage) New(msgID int32, msgData string) *PMessage {
+func (t PMessage) New(msgID int32, msg proto.Message) *PMessage {
 	t.m_msgID = msgID
-	t.m_msgData = msgData
+	msgData, err := proto.Marshal(msg)
+	if err != nil {
+		log.Print("proto.Marshal failed,error:", err)
+	} else {
+		t.m_msgData = msgData
+	}
 	return &t
 }
 
@@ -35,12 +43,13 @@ func (t PMessage) NewByHead(bufferHead []byte, sessionID int64) (*PMessage, int3
 	return &t, l
 }
 
-func (t *PMessage) ParseFromString(data string) {
-	t.m_msgData = data // TODO: 正常解析待制作
+func (t *PMessage) SetMsgData(data string) {
+	t.m_msgData = []byte(data)
 }
 
-func (t *PMessage) SerializeAsString() string {
-	var l int32 = int32(len(t.m_msgData)) // 消息体长度,不包含消息头
+func (t *PMessage) Marshal() string {
+	// 消息体长度,不包含消息头
+	var l int32 = int32(len(t.m_msgData))
 
 	// 消息头
 	buffer := bytes.NewBuffer([]byte{})
@@ -48,9 +57,13 @@ func (t *PMessage) SerializeAsString() string {
 	binary.Write(buffer, binary.BigEndian, &(t.m_msgID))
 
 	// 消息体
-	buffer.Write([]byte(t.m_msgData))
+	buffer.Write(t.m_msgData)
 
 	return buffer.String()
+}
+
+func (t *PMessage) Unmarshal(msg proto.Message) {
+	proto.Unmarshal(t.m_msgData, msg)
 }
 
 func (t *PMessage) String() string {

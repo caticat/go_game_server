@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ProtoExample;
+
+enum MsgID
+{
+	InitSessionReqID = 0;
+	InitSessionAckID = 1;
+
+	HelloReqID = 10001;
+	HelloAckID = 10002;
+}
