@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
 	ProtoExample "github.com/caticat/go_game_server/example/proto"
+	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
 
@@ -26,19 +24,19 @@ func (t *MessageManager) helloReqHandler(r *pnet.PRecvData) bool {
 	// 参数校验
 	s := r.GetSocket()
 	if s == nil {
-		log.Println("s == nil")
+		plog.ErrorLn("s == nil")
 		return false
 	}
 	m := r.GetMessage()
 	if m == nil {
-		log.Println("msg == nil")
+		plog.ErrorLn("msg == nil")
 		return false
 	}
 	msg := &ProtoExample.HelloReq{}
 	m.Unmarshal(msg)
 
 	// 逻辑处理
-	fmt.Println("收到消息:", m.GetMsgID(), msg.GetMsg())
+	plog.DebugLn("收到消息:", m.GetMsgID(), msg.GetMsg())
 
 	// 返回协议
 	a := &ProtoExample.HelloAck{

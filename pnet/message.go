@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"log"
 
+	"github.com/caticat/go_game_server/plog"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -24,7 +24,7 @@ func (t PMessage) New(msgID int32, msg proto.Message) *PMessage {
 	t.m_msgID = msgID
 	msgData, err := proto.Marshal(msg)
 	if err != nil {
-		log.Print("proto.Marshal failed,error:", err)
+		plog.ErrorLn("proto.Marshal failed,error:", err)
 	} else {
 		t.m_msgData = msgData
 	}

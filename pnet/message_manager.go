@@ -1,6 +1,8 @@
 package pnet
 
-import "log"
+import (
+	"github.com/caticat/go_game_server/plog"
+)
 
 type messageHandler_t func(*PRecvData) bool
 
@@ -19,18 +21,18 @@ func (t *PMessageManager) Regist(msgID int32, fun messageHandler_t) {
 
 func (t *PMessageManager) Trigger(r *PRecvData) bool {
 	if r == nil {
-		log.Printf("r == nil")
+		plog.ErrorLn("r == nil")
 		return false
 	}
 	m := r.GetMessage()
 	if m == nil {
-		log.Printf("m == nil")
+		plog.ErrorLn("m == nil")
 		return false
 	}
 
 	fun, ok := t.m_mapMsgIDHandler[m.GetMsgID()]
 	if !ok {
-		log.Printf("msgID:%v not found\n", m.GetMsgID())
+		plog.ErrorLn("msgID:%v not found\n", m.GetMsgID())
 		return false
 	}
 

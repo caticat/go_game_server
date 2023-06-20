@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	ProtoExample "github.com/caticat/go_game_server/example/proto"
+	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
 
@@ -24,12 +23,12 @@ func (t *MessageManager) Init() {
 func (t *MessageManager) helloAckHandler(r *pnet.PRecvData) bool {
 	m := r.GetMessage()
 	if m == nil {
-		log.Println("msg == nil")
+		plog.ErrorLn("msg == nil")
 		return false
 	}
 	msg := &ProtoExample.HelloAck{}
 	m.Unmarshal(msg)
-	log.Println("收到消息:", m.GetMsgID(), msg.GetError(), msg.GetMsg())
+	plog.InfoLn("收到消息:", m.GetMsgID(), msg.GetError(), msg.GetMsg())
 
 	return false
 }

@@ -22,7 +22,7 @@ var (
 
 func main() {
 	// 初始化
-	plog.LogInit()
+	plog.Init(plog.ELogLevel_Debug, "")
 	getMessageManager().Init()
 
 	// 连接

@@ -2,20 +2,21 @@ package pnet
 
 import (
 	"fmt"
-	"log"
 	"net"
+
+	"github.com/caticat/go_game_server/plog"
 )
 
 func ListenAndServe(port int, socketMgr PSocketManager) {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
-		log.Panic(err)
+		plog.PanicLn(err)
 	}
 
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			log.Print(err)
+			plog.ErrorLn(err)
 			continue
 		}
 		socketMgr.OnConnect(conn)

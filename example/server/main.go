@@ -15,9 +15,10 @@ var (
 )
 
 func main() {
-	plog.LogInit()
+	c := getConf()
+	c.Init()
+	plog.Init(c.GetLog().GetLevel(), c.GetLog().GetFile())
 	getMessageManager().Init()
-	getConf().Init()
 
 	go run()
 	pnet.ListenAndServe(getConf().GetPort(), getSocketManager())

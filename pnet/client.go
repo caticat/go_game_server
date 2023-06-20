@@ -1,15 +1,16 @@
 package pnet
 
 import (
-	"log"
 	"net"
 	"strconv"
+
+	"github.com/caticat/go_game_server/plog"
 )
 
 func Dial(ip string, port int, chaRecv chan *PRecvData) *PSocket {
 	conn, err := net.Dial("tcp", ip+":"+strconv.Itoa(port))
 	if err != nil {
-		log.Panic(err)
+		plog.PanicLn(err)
 	}
 
 	return PSocket{}.New(conn, chaRecv)

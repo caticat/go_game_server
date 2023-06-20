@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"net"
 
 	"github.com/caticat/go_game_server/example/server/conf"
+	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
 
@@ -32,7 +32,7 @@ func (t *SocketManager) OnConnect(conn net.Conn) {
 
 func (t *SocketManager) Add(s *pnet.PSocket) {
 	if s == nil {
-		log.Println("s == nil")
+		plog.ErrorLn("s == nil")
 		return
 	}
 
@@ -45,7 +45,7 @@ func (t *SocketManager) Del(sessionID int64) { delete(t.m_mapSocket, sessionID) 
 func (t *SocketManager) Get(sessionID int64) *pnet.PSocket {
 	s, ok := t.m_mapSocket[sessionID]
 	if !ok {
-		log.Printf("sessionID:%v not exist\n", sessionID)
+		plog.ErrorLn("sessionID:%v not exist\n", sessionID)
 		return nil
 	}
 	return s

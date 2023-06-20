@@ -3,8 +3,9 @@ package pnet
 import (
 	"bufio"
 	"io"
-	"log"
 	"net"
+
+	"github.com/caticat/go_game_server/plog"
 )
 
 const PSocket_ChanLen = 10 // 收发消息阻塞长度
@@ -68,7 +69,7 @@ func (t *PSocket) runRecv() {
 		lh, err := io.ReadFull(r, bufferHead)
 		if err != nil {
 			if lh != 0 {
-				log.Println("conn read failed, head, err:", err)
+				plog.InfoLn("conn read failed, head, err:", err)
 			}
 			t.Close()
 			break
@@ -79,7 +80,7 @@ func (t *PSocket) runRecv() {
 		bufferBody := make([]byte, l)
 		_, err = io.ReadFull(r, bufferBody)
 		if err != nil {
-			log.Println("conn read failed, body, err:", err)
+			plog.InfoLn("conn read failed, body, err:", err)
 			t.Close()
 			break
 		}
@@ -102,7 +103,7 @@ func (t *PSocket) send(data *PMessage) {
 	for lenWaitSend > lenDoneSend {
 		lenSend, err = conn.Write(sliData[lenDoneSend:])
 		if err != nil {
-			log.Println("conn write failed, err:", err)
+			plog.InfoLn("conn write failed, err:", err)
 			t.Close()
 			break
 		}
