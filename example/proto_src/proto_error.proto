@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ProtoExample;
+
+enum ErrorCode
+{
+	OK = 0;
+	InvalidParam = 1;
+}

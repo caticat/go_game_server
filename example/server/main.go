@@ -1,44 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"net"
 	"time"
 
+	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
 
-const (
-	PPORT      = 6666
-	ChaRecvLen = 100
-)
-
 var (
-	g_s       *pnet.PSocket
-	g_chaRecv chan *pnet.PMessage = make(chan *pnet.PMessage, ChaRecvLen)
+	g_socketManager  = SocketManager{}.New()
+	g_messageManager = MessageManager{}.New()
+	g_conf           = conf.ConfServer{}.New()
 )
 
 func main() {
 	plog.LogInit()
+	getMessageManager().Init()
+	getConf().Init()
 
 	go run()
-	pnet.ListenAndServe(PPORT, handleConnection)
-}
-
-func handleConnection(conn net.Conn) {
-	g_s = pnet.PSocket{}.New(conn, g_chaRecv)
-	g_s.Start()
+	pnet.ListenAndServe(getConf().GetPort(), getSocketManager())
 }
 
 func run() {
 	t := time.Tick(100 * time.Millisecond)
+	chaRecv := getSocketManager().getChaRecv()
 	for {
 		select {
-		case m := <-g_chaRecv:
-			fmt.Println("recv msg:", m)
+		case r := <-chaRecv:
+			getMessageManager().Trigger(r)
 		case <-t:
 			time.Sleep(50 * time.Millisecond)
 		}
 	}
 }
+
+func getSocketManager() *SocketManager   { return g_socketManager }
+func getMessageManager() *MessageManager { return g_messageManager }
+func getConf() *conf.ConfServer          { return g_conf }

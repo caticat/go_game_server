@@ -1,4 +1,4 @@
-module github.com/caticat/go_game_server/pnet
+module github.com/caticat/go_game_server/example/proto
 
 go 1.20
 

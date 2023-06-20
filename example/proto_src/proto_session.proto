@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "proto_error.proto";
+
+package ProtoExample;
+
+message InitSessionReq
+{
+	int64 sessionID = 1;
+}
+message InitSessionAck
+{
+	ErrorCode error = 1;
+	int64 sessionID = 2;
+}

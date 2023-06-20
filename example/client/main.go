@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
+	ProtoExample "github.com/caticat/go_game_server/example/proto"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
@@ -15,20 +15,46 @@ const (
 )
 
 var (
-	g_s       *pnet.PSocket
-	g_chaRecv chan *pnet.PMessage = make(chan *pnet.PMessage, ChaRecvLen)
+	g_s              *pnet.PSocket
+	g_chaRecv        chan *pnet.PRecvData = make(chan *pnet.PRecvData, ChaRecvLen)
+	g_messageManager                      = MessageManager{}.New()
 )
 
 func main() {
+	// 初始化
 	plog.LogInit()
+	getMessageManager().Init()
 
-	g_s = pnet.Dial("127.0.0.1", 6666, g_chaRecv)
+	// 连接
+	g_s = pnet.Dial("127.0.0.1", 6666, getChaRecv())
 	g_s.Start()
 
+	// 收取协议
+	go run()
+
+	// 发送协议
 	for i := 0; i < 10; i++ {
-		d := pnet.PMessage{}.New(int32(1000+i), strings.Repeat("a", i))
-		fmt.Println("send data:", d)
+		msg := &ProtoExample.HelloReq{
+			Msg: strings.Repeat("a", i),
+		}
+		d := pnet.PMessage{}.New(int32(ProtoExample.MsgID_HelloReqID), msg)
 		g_s.Send(d)
 		time.Sleep(time.Second)
 	}
 }
+
+func run() {
+	t := time.Tick(100 * time.Millisecond)
+	chaRecv := getChaRecv()
+	for {
+		select {
+		case r := <-chaRecv:
+			getMessageManager().Trigger(r)
+		case <-t:
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+}
+
+func getChaRecv() chan *pnet.PRecvData   { return g_chaRecv }
+func getMessageManager() *MessageManager { return g_messageManager }
