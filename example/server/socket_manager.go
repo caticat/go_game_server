@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/pnet"
 )
 
@@ -19,7 +20,7 @@ func (t *SocketManager) getChaRecv() chan *pnet.PRecvData { return t.m_chaRecv }
 
 func (t SocketManager) New() *SocketManager {
 	t.m_mapSocketPre = make(map[*pnet.PSocket]bool)
-	t.m_chaRecv = make(chan *pnet.PRecvData, ChaRecvLen)
+	t.m_chaRecv = make(chan *pnet.PRecvData, conf.ChaRecvLen)
 	return &t
 }
 

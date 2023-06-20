@@ -3,26 +3,24 @@ package main
 import (
 	"time"
 
+	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
-)
-
-const (
-	PPORT      = 6666
-	ChaRecvLen = 100
 )
 
 var (
 	g_socketManager  = SocketManager{}.New()
 	g_messageManager = MessageManager{}.New()
+	g_conf           = conf.ConfServer{}.New()
 )
 
 func main() {
 	plog.LogInit()
 	getMessageManager().Init()
+	getConf().Init()
 
 	go run()
-	pnet.ListenAndServe(PPORT, getSocketManager())
+	pnet.ListenAndServe(getConf().GetPort(), getSocketManager())
 }
 
 func run() {
@@ -40,3 +38,4 @@ func run() {
 
 func getSocketManager() *SocketManager   { return g_socketManager }
 func getMessageManager() *MessageManager { return g_messageManager }
+func getConf() *conf.ConfServer          { return g_conf }
