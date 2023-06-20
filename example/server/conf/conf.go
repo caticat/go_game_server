@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	FileConfig = flag.String("c", "server.yaml", "-c=server.yaml")
+	FileConfig string
 )
 
 type ConfServer struct {
@@ -30,9 +30,9 @@ func NewConfServer() *ConfServer {
 }
 
 func (t *ConfServer) Init() {
-	flag.Parse()
+	t.parseArgs()
 
-	f, err := os.ReadFile(*FileConfig)
+	f, err := os.ReadFile(FileConfig)
 	if err != nil {
 		plog.FatalLn("ioutil.ReadFile failed,error:", err)
 	}
@@ -45,3 +45,11 @@ func (t *ConfServer) Init() {
 
 func (t *ConfServer) GetPort() int     { return t.Port }
 func (t *ConfServer) GetLog() *ConfLog { return t.Log }
+
+func (t *ConfServer) parseArgs() {
+	flag.StringVar(&FileConfig, "c", "server.yaml", "-c=server.yaml")
+	flag.StringVar(&FileConfig, "conf", "server.yaml", "-conf=server.yaml")
+	flag.StringVar(&FileConfig, "config", "server.yaml", "-config=server.yaml")
+
+	flag.Parse()
+}
