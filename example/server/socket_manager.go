@@ -20,10 +20,10 @@ func (t *SocketManager) getChaRecv() chan *pnet.PRecvData { return t.m_chaRecv }
 
 func NewSocketManager() *SocketManager {
 	t := &SocketManager{
-		m_mapSocketPre : make(map[*pnet.PSocket]bool),
-		m_chaRecv : make(chan *pnet.PRecvData, conf.ChaRecvLen)
+		m_mapSocketPre: make(map[*pnet.PSocket]bool),
+		m_chaRecv:      make(chan *pnet.PRecvData, conf.ChaRecvLen),
 	}
-	return &t
+	return t
 }
 
 func (t *SocketManager) OnConnect(conn net.Conn) {
