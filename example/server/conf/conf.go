@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"flag"
 	"os"
 
 	"github.com/caticat/go_game_server/plog"
@@ -9,7 +10,11 @@ import (
 
 const (
 	ChaRecvLen = 100
-	FileConfig = "server.yaml"
+	// FileConfig = "server.yaml"
+)
+
+var (
+	FileConfig = flag.String("c", "server.yaml", "-c=server.yaml")
 )
 
 type ConfServer struct {
@@ -17,13 +22,17 @@ type ConfServer struct {
 	Log  *ConfLog `yaml:"log"`
 }
 
-func (t ConfServer) New() *ConfServer {
-	t.Log = NewConfLog()
-	return &t
+func NewConfServer() *ConfServer {
+	t := &ConfServer{
+		Log: NewConfLog(),
+	}
+	return t
 }
 
 func (t *ConfServer) Init() {
-	f, err := os.ReadFile(FileConfig)
+	flag.Parse()
+
+	f, err := os.ReadFile(*FileConfig)
 	if err != nil {
 		plog.FatalLn("ioutil.ReadFile failed,error:", err)
 	}

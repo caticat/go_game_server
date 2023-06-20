@@ -33,11 +33,13 @@ func (t *PSocket) GetSessionID() int64 { return t.m_sessionID }
 
 func (t *PSocket) SetSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
-func (t PSocket) New(c net.Conn, chaRecv chan *PRecvData) *PSocket {
-	t.m_conn = c
-	t.m_chaSend = make(chan *PMessage, PSocket_ChanLen)
-	t.m_chaRecv = chaRecv
-	return &t
+func NewPSocket(c net.Conn, chaRecv chan *PRecvData) *PSocket {
+	t := &PSocket{
+		m_conn:    c,
+		m_chaSend: make(chan *PMessage, PSocket_ChanLen),
+		m_chaRecv: chaRecv,
+	}
+	return t
 }
 
 func (t *PSocket) Start() {
@@ -87,7 +89,7 @@ func (t *PSocket) runRecv() {
 		p.SetMsgData(string(bufferBody))
 
 		// 返回
-		chaRecv <- PRecvData{}.New(t, p)
+		chaRecv <- NewPRecvData(t, p)
 	}
 }
 

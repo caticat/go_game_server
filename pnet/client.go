@@ -13,5 +13,5 @@ func Dial(ip string, port int, chaRecv chan *PRecvData) *PSocket {
 		plog.PanicLn(err)
 	}
 
-	return PSocket{}.New(conn, chaRecv)
+	return NewPSocket(conn, chaRecv)
 }

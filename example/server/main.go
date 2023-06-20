@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	g_socketManager  = SocketManager{}.New()
-	g_messageManager = MessageManager{}.New()
-	g_conf           = conf.ConfServer{}.New()
+	g_socketManager  = NewSocketManager()
+	g_messageManager = NewMessageManager()
+	g_conf           = conf.NewConfServer()
 )
 
 func main() {

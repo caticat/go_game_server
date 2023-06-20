@@ -10,9 +10,11 @@ type PMessageManager struct {
 	m_mapMsgIDHandler map[int32]messageHandler_t
 }
 
-func (t PMessageManager) New() *PMessageManager {
-	t.m_mapMsgIDHandler = make(map[int32]messageHandler_t)
-	return &t
+func NewPMessageManager() *PMessageManager {
+	t := &PMessageManager{
+		m_mapMsgIDHandler: make(map[int32]messageHandler_t),
+	}
+	return t
 }
 
 func (t *PMessageManager) Regist(msgID int32, fun messageHandler_t) {

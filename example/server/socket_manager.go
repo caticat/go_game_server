@@ -18,14 +18,16 @@ type SocketManager struct {
 
 func (t *SocketManager) getChaRecv() chan *pnet.PRecvData { return t.m_chaRecv }
 
-func (t SocketManager) New() *SocketManager {
-	t.m_mapSocketPre = make(map[*pnet.PSocket]bool)
-	t.m_chaRecv = make(chan *pnet.PRecvData, conf.ChaRecvLen)
+func NewSocketManager() *SocketManager {
+	t := &SocketManager{
+		m_mapSocketPre : make(map[*pnet.PSocket]bool),
+		m_chaRecv : make(chan *pnet.PRecvData, conf.ChaRecvLen)
+	}
 	return &t
 }
 
 func (t *SocketManager) OnConnect(conn net.Conn) {
-	s := pnet.PSocket{}.New(conn, t.getChaRecv())
+	s := pnet.NewPSocket(conn, t.getChaRecv())
 	s.Start()
 	t.m_mapSocketPre[s] = true
 }

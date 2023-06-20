@@ -10,9 +10,11 @@ type MessageManager struct {
 	*pnet.PMessageManager
 }
 
-func (t MessageManager) New() *MessageManager {
-	t.PMessageManager = pnet.PMessageManager{}.New()
-	return &t
+func NewMessageManager() *MessageManager {
+	t := &MessageManager{
+		PMessageManager: pnet.NewPMessageManager(),
+	}
+	return t
 }
 
 func (t *MessageManager) Init() {
@@ -43,7 +45,7 @@ func (t *MessageManager) helloReqHandler(r *pnet.PRecvData) bool {
 		Error: ProtoExample.ErrorCode_OK,
 		Msg:   "收到消息了:" + msg.GetMsg(),
 	}
-	s.Send(pnet.PMessage{}.New(int32(ProtoExample.MsgID_HelloAckID), a))
+	s.Send(pnet.NewPMessage(int32(ProtoExample.MsgID_HelloAckID), a))
 
 	return false
 }

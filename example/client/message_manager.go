@@ -10,9 +10,11 @@ type MessageManager struct {
 	*pnet.PMessageManager
 }
 
-func (t MessageManager) New() *MessageManager {
-	t.PMessageManager = pnet.PMessageManager{}.New()
-	return &t
+func NewMessageManager() *MessageManager {
+	t := &MessageManager{
+		PMessageManager: pnet.NewPMessageManager(),
+	}
+	return t
 }
 
 func (t *MessageManager) Init() {

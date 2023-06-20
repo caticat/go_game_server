@@ -17,7 +17,7 @@ const (
 var (
 	g_s              *pnet.PSocket
 	g_chaRecv        chan *pnet.PRecvData = make(chan *pnet.PRecvData, ChaRecvLen)
-	g_messageManager                      = MessageManager{}.New()
+	g_messageManager                      = NewMessageManager()
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 		msg := &ProtoExample.HelloReq{
 			Msg: strings.Repeat("a", i),
 		}
-		d := pnet.PMessage{}.New(int32(ProtoExample.MsgID_HelloReqID), msg)
+		d := pnet.NewPMessage(int32(ProtoExample.MsgID_HelloReqID), msg)
 		g_s.Send(d)
 		time.Sleep(time.Second)
 	}

@@ -20,15 +20,17 @@ func (t *PMessage) GetMsgID() int32              { return t.m_msgID }
 func (t *PMessage) GetSessionID() int64          { return t.m_sessionID }
 func (t *PMessage) setSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
-func (t PMessage) New(msgID int32, msg proto.Message) *PMessage {
-	t.m_msgID = msgID
+func NewPMessage(msgID int32, msg proto.Message) *PMessage {
+	t := &PMessage{
+		m_msgID: msgID,
+	}
 	msgData, err := proto.Marshal(msg)
 	if err != nil {
 		plog.ErrorLn("proto.Marshal failed,error:", err)
 	} else {
 		t.m_msgData = msgData
 	}
-	return &t
+	return t
 }
 
 func (t PMessage) NewByHead(bufferHead []byte, sessionID int64) (*PMessage, int32) {

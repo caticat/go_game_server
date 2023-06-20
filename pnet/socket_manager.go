@@ -15,10 +15,12 @@ type PRecvData struct {
 	m_message *PMessage
 }
 
-func (t PRecvData) New(s *PSocket, m *PMessage) *PRecvData {
-	t.m_socket = s
-	t.m_message = m
-	return &t
+func NewPRecvData(s *PSocket, m *PMessage) *PRecvData {
+	t := &PRecvData{
+		m_socket:  s,
+		m_message: m,
+	}
+	return t
 }
 func (t *PRecvData) GetSocket() *PSocket   { return t.m_socket }
 func (t *PRecvData) GetMessage() *PMessage { return t.m_message }
