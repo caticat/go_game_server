@@ -1,6 +1,6 @@
 syntax = "proto3";
-
-package ProtoExample;
+package proto;
+option go_package = "github.com/caticat/go_game_server/example/proto";
 
 enum ErrorCode
 {

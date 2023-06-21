@@ -21,12 +21,14 @@ func main() {
 	getMessageManager().Init()
 
 	go run()
-	pnet.ListenAndServe(getConf().GetPort(), getSocketManager())
+	pnet.Init(getSocketManager())
+	pnet.Connect(getConf().GetRemoteServers())
+	pnet.ListenAndServe(getConf().GetPort())
 }
 
 func run() {
 	t := time.Tick(100 * time.Millisecond)
-	chaRecv := getSocketManager().getChaRecv()
+	chaRecv := getSocketManager().GetChaRecv()
 	for {
 		select {
 		case r := <-chaRecv:

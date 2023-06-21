@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/caticat/go_game_server/plog"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type PMessage struct {

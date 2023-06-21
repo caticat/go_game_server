@@ -7,7 +7,13 @@ import (
 	"github.com/caticat/go_game_server/plog"
 )
 
-func ListenAndServe(port int, socketMgr PSocketManager) {
+func Init(socketMgr PSocketManager) { setSocketMgr(socketMgr) }
+
+func ListenAndServe(port int) {
+	socketMgr := GetSocketMgr()
+	if socketMgr == nil {
+		plog.PanicLn("socketMgr == nil")
+	}
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
 		plog.PanicLn(err)
@@ -19,6 +25,15 @@ func ListenAndServe(port int, socketMgr PSocketManager) {
 			plog.ErrorLn(err)
 			continue
 		}
-		socketMgr.OnConnect(conn)
+
+		socketMgr.OnConnect(NewPSocket(conn, socketMgr.GetChaRecv()))
 	}
+}
+
+func Connect(serverConfigs []*ConfRemoteServer) {
+	socketMgr := GetSocketMgr()
+	if socketMgr == nil {
+		plog.PanicLn("socketMgr == nil")
+	}
+	go runConnect(serverConfigs)
 }

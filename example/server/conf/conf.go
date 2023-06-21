@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/caticat/go_game_server/plog"
+	"github.com/caticat/go_game_server/pnet"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,8 +19,9 @@ var (
 )
 
 type ConfServer struct {
-	Port int      `yaml:"port"`
-	Log  *ConfLog `yaml:"log"`
+	Port          int                      `yaml:"port"`
+	Log           *ConfLog                 `yaml:"log"`
+	RemoteServers []*pnet.ConfRemoteServer `yaml:"remote_server"`
 }
 
 func NewConfServer() *ConfServer {
@@ -43,8 +45,9 @@ func (t *ConfServer) Init() {
 	}
 }
 
-func (t *ConfServer) GetPort() int     { return t.Port }
-func (t *ConfServer) GetLog() *ConfLog { return t.Log }
+func (t *ConfServer) GetPort() int                               { return t.Port }
+func (t *ConfServer) GetLog() *ConfLog                           { return t.Log }
+func (t *ConfServer) GetRemoteServers() []*pnet.ConfRemoteServer { return t.RemoteServers }
 
 func (t *ConfServer) parseArgs() {
 	flag.StringVar(&FileConfig, "c", "server.yaml", "-c=server.yaml")

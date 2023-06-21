@@ -17,21 +17,12 @@ type PSocket struct {
 	m_sessionID int64
 }
 
-func (t *PSocket) getConn() net.Conn {
-	return t.m_conn
-}
-
-func (t *PSocket) getChaSend() chan *PMessage {
-	return t.m_chaSend
-}
-
-func (t *PSocket) getChaRecv() chan *PRecvData {
-	return t.m_chaRecv
-}
-
-func (t *PSocket) GetSessionID() int64 { return t.m_sessionID }
-
+func (t *PSocket) getConn() net.Conn            { return t.m_conn }
+func (t *PSocket) getChaSend() chan *PMessage   { return t.m_chaSend }
+func (t *PSocket) getChaRecv() chan *PRecvData  { return t.m_chaRecv }
+func (t *PSocket) GetSessionID() int64          { return t.m_sessionID }
 func (t *PSocket) SetSessionID(sessionID int64) { t.m_sessionID = sessionID }
+func (t *PSocket) GetHost() string              { return t.m_conn.RemoteAddr().String() }
 
 func NewPSocket(c net.Conn, chaRecv chan *PRecvData) *PSocket {
 	t := &PSocket{
@@ -47,18 +38,20 @@ func (t *PSocket) Start() {
 	go t.runRecv()
 }
 
-func (t *PSocket) Send(m *PMessage) {
-	t.m_chaSend <- m
-}
+func (t *PSocket) Send(m *PMessage) { t.m_chaSend <- m }
 
 func (t *PSocket) runSend() {
-	for {
-		select {
-		case data := <-t.getChaSend():
-			t.send(data)
-			// TODO: 是否需要退出循环
-		}
+	for data := range t.getChaSend() {
+		t.send(data)
 	}
+
+	// for {
+	// 	select {
+	// 	case data := <-t.getChaSend():
+	// 		t.send(data)
+	// TODO: 是否需要退出循环
+	// 	}
+	// }
 }
 
 func (t *PSocket) runRecv() {
@@ -114,5 +107,6 @@ func (t *PSocket) send(data *PMessage) {
 }
 
 func (t *PSocket) Close() {
+	GetSocketMgr().OnDisconnect(t)
 	t.getConn().Close()
 }

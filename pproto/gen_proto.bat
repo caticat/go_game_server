@@ -10,7 +10,7 @@ set "pathOut=E:\\pan\\go_game_server\\example\\proto"
 :: 导出
 for %%i in (%pathIn%\\*.proto) do (
 	echo export %%i
-	%binProtoc% --go_out=%pathOut% --proto_path=%pathIn% %%i
+	%binProtoc% --proto_path=%pathIn% --go_out=%pathOut% --go_opt=paths=source_relative %%i
 )
 
 @REM pause

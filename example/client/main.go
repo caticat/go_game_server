@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	ProtoExample "github.com/caticat/go_game_server/example/proto"
+	pproto "github.com/caticat/go_game_server/example/proto"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
@@ -27,6 +27,9 @@ func main() {
 
 	// 连接
 	g_s = pnet.Dial("127.0.0.1", 6666, getChaRecv())
+	if g_s == nil {
+		plog.PanicLn("g_s == nil")
+	}
 	g_s.Start()
 
 	// 收取协议
@@ -34,10 +37,10 @@ func main() {
 
 	// 发送协议
 	for i := 0; i < 10; i++ {
-		msg := &ProtoExample.HelloReq{
+		msg := &pproto.HelloReq{
 			Msg: strings.Repeat("a", i),
 		}
-		d := pnet.NewPMessage(int32(ProtoExample.MsgID_HelloReqID), msg)
+		d := pnet.NewPMessage(int32(pproto.MsgID_HelloReqID), msg)
 		g_s.Send(d)
 		time.Sleep(time.Second)
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	ProtoExample "github.com/caticat/go_game_server/example/proto"
+	pproto "github.com/caticat/go_game_server/example/proto"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
@@ -19,7 +19,7 @@ func NewMessageManager() *MessageManager {
 
 func (t *MessageManager) Init() {
 	// 消息待注册
-	t.Regist(int32(ProtoExample.MsgID_HelloAckID), t.helloAckHandler)
+	t.Regist(int32(pproto.MsgID_HelloAckID), t.helloAckHandler)
 }
 
 func (t *MessageManager) helloAckHandler(r *pnet.PRecvData) bool {
@@ -28,7 +28,7 @@ func (t *MessageManager) helloAckHandler(r *pnet.PRecvData) bool {
 		plog.ErrorLn("msg == nil")
 		return false
 	}
-	msg := &ProtoExample.HelloAck{}
+	msg := &pproto.HelloAck{}
 	m.Unmarshal(msg)
 	plog.InfoLn("收到消息:", m.GetMsgID(), msg.GetError(), msg.GetMsg())
 

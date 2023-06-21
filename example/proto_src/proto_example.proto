@@ -1,8 +1,8 @@
 syntax = "proto3";
-
 import "proto_error.proto";
+package proto;
+option go_package = "github.com/caticat/go_game_server/example/proto";
 
-package ProtoExample;
 
 message HelloReq
 {

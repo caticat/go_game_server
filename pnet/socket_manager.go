@@ -1,9 +1,21 @@
 package pnet
 
-import "net"
+import (
+	"time"
+
+	"github.com/caticat/go_game_server/plog"
+)
+
+var g_socketMgr PSocketManager = nil
+
+func GetSocketMgr() PSocketManager          { return g_socketMgr }
+func setSocketMgr(socketMgr PSocketManager) { g_socketMgr = socketMgr }
 
 type PSocketManager interface {
-	OnConnect(net.Conn)
+	GetChaRecv() chan *PRecvData
+	OnConnect(*PSocket)
+	OnDisconnect(*PSocket)
+	HasConnect(host string) bool
 	Add(*PSocket)
 	Del(int64)
 	Get(int64) *PSocket
@@ -24,3 +36,37 @@ func NewPRecvData(s *PSocket, m *PMessage) *PRecvData {
 }
 func (t *PRecvData) GetSocket() *PSocket   { return t.m_socket }
 func (t *PRecvData) GetMessage() *PMessage { return t.m_message }
+
+func runConnect(serverConfigs []*ConfRemoteServer) {
+	socketMgr := GetSocketMgr()
+	if socketMgr == nil {
+		plog.PanicLn("socketMgr == nil")
+	}
+
+	t := time.Tick(time.Second * 10)
+	for range t {
+		for _, cfg := range serverConfigs {
+			if socketMgr.HasConnect(cfg.String()) {
+				continue
+			}
+
+			connect(cfg)
+		}
+	}
+}
+
+func connect(cfg *ConfRemoteServer) {
+	socketMgr := GetSocketMgr()
+	if socketMgr == nil {
+		plog.PanicLn("socketMgr == nil")
+	}
+
+	plog.DebugLn("try connect to:", cfg)
+	s := Dial(cfg.GetIP(), cfg.GetPort(), socketMgr.GetChaRecv())
+	if s == nil {
+		plog.ErrorLn("Dail failed,cfg:", cfg)
+		return
+	}
+
+	socketMgr.OnConnect(s)
+}

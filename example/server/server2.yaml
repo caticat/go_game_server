@@ -1,0 +1,5 @@
+# go run . -c=server2.yaml
+
+port: 6667
+log:
+  level: 1

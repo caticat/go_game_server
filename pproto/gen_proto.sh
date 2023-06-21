@@ -12,5 +12,5 @@ protoFiles=$(ls $pathIn/*.proto)
 
 # 导出
 for file in "${protoFiles[@]}"; do
-	$binProtoc --go_out=$pathOut --proto_path=$pathIn $file
+	$binProtoc --proto_path=$pathIn --go_out=$pathOut --go_opt=paths=source_relative $file
 done
