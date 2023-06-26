@@ -9,8 +9,8 @@ port_in: 6669
 log:
   level: 1
 
-remote_server:
-  - server_id: 3
-    connection_type: 2
-    ip: 127.0.0.1
-    port: 6671
+# remote_server:
+#   - server_id: 3
+#     connection_type: 2
+#     ip: 127.0.0.1
+#     port: 6671
