@@ -4,8 +4,9 @@ option go_package = "github.com/caticat/go_game_server/example/proto";
 
 enum MsgID
 {
-	InitSessionReqID = 0;
-	InitSessionAckID = 1;
+	TickNtfID = 0; // 心跳包
+	InitSessionNtfID = 1; // 外部 客户端 连接服务器用
+	InitConnectionNtfID = 2; // 内服 服务器 连接服务器用
 
 	HelloReqID = 10001;
 	HelloAckID = 10002;

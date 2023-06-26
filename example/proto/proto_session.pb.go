@@ -4,6 +4,8 @@
 // 	protoc        v4.23.3
 // source: proto_session.proto
 
+// import "proto_error.proto";
+
 package proto
 
 import (
@@ -20,16 +22,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type InitSessionReq struct {
+type ConnectionType int32
+
+const (
+	ConnectionType_ConnectionType_Default ConnectionType = 0 // 默认连接类型
+	ConnectionType_ConnectionType_Client  ConnectionType = 1 // 客户端类型
+	ConnectionType_ConnectionType_Test1   ConnectionType = 2 // 测试服务器类型
+	ConnectionType_ConnectionType_Test2   ConnectionType = 3 // 测试服务器类型
+)
+
+// Enum value maps for ConnectionType.
+var (
+	ConnectionType_name = map[int32]string{
+		0: "ConnectionType_Default",
+		1: "ConnectionType_Client",
+		2: "ConnectionType_Test1",
+		3: "ConnectionType_Test2",
+	}
+	ConnectionType_value = map[string]int32{
+		"ConnectionType_Default": 0,
+		"ConnectionType_Client":  1,
+		"ConnectionType_Test1":   2,
+		"ConnectionType_Test2":   3,
+	}
+)
+
+func (x ConnectionType) Enum() *ConnectionType {
+	p := new(ConnectionType)
+	*p = x
+	return p
+}
+
+func (x ConnectionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ConnectionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_session_proto_enumTypes[0].Descriptor()
+}
+
+func (ConnectionType) Type() protoreflect.EnumType {
+	return &file_proto_session_proto_enumTypes[0]
+}
+
+func (x ConnectionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ConnectionType.Descriptor instead.
+func (ConnectionType) EnumDescriptor() ([]byte, []int) {
+	return file_proto_session_proto_rawDescGZIP(), []int{0}
+}
+
+type TickNtf struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	SessionID int64 `protobuf:"varint,1,opt,name=sessionID,proto3" json:"sessionID,omitempty"`
 }
 
-func (x *InitSessionReq) Reset() {
-	*x = InitSessionReq{}
+func (x *TickNtf) Reset() {
+	*x = TickNtf{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_session_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -37,13 +89,13 @@ func (x *InitSessionReq) Reset() {
 	}
 }
 
-func (x *InitSessionReq) String() string {
+func (x *TickNtf) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InitSessionReq) ProtoMessage() {}
+func (*TickNtf) ProtoMessage() {}
 
-func (x *InitSessionReq) ProtoReflect() protoreflect.Message {
+func (x *TickNtf) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_session_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,29 +107,21 @@ func (x *InitSessionReq) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use InitSessionReq.ProtoReflect.Descriptor instead.
-func (*InitSessionReq) Descriptor() ([]byte, []int) {
+// Deprecated: Use TickNtf.ProtoReflect.Descriptor instead.
+func (*TickNtf) Descriptor() ([]byte, []int) {
 	return file_proto_session_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *InitSessionReq) GetSessionID() int64 {
-	if x != nil {
-		return x.SessionID
-	}
-	return 0
-}
-
-type InitSessionAck struct {
+type InitSessionNtf struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Error     ErrorCode `protobuf:"varint,1,opt,name=error,proto3,enum=proto.ErrorCode" json:"error,omitempty"`
-	SessionID int64     `protobuf:"varint,2,opt,name=sessionID,proto3" json:"sessionID,omitempty"`
+	SessionID int64 `protobuf:"varint,1,opt,name=sessionID,proto3" json:"sessionID,omitempty"`
 }
 
-func (x *InitSessionAck) Reset() {
-	*x = InitSessionAck{}
+func (x *InitSessionNtf) Reset() {
+	*x = InitSessionNtf{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_session_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -85,13 +129,13 @@ func (x *InitSessionAck) Reset() {
 	}
 }
 
-func (x *InitSessionAck) String() string {
+func (x *InitSessionNtf) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InitSessionAck) ProtoMessage() {}
+func (*InitSessionNtf) ProtoMessage() {}
 
-func (x *InitSessionAck) ProtoReflect() protoreflect.Message {
+func (x *InitSessionNtf) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_session_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -103,44 +147,100 @@ func (x *InitSessionAck) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use InitSessionAck.ProtoReflect.Descriptor instead.
-func (*InitSessionAck) Descriptor() ([]byte, []int) {
+// Deprecated: Use InitSessionNtf.ProtoReflect.Descriptor instead.
+func (*InitSessionNtf) Descriptor() ([]byte, []int) {
 	return file_proto_session_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *InitSessionAck) GetError() ErrorCode {
-	if x != nil {
-		return x.Error
-	}
-	return ErrorCode_OK
-}
-
-func (x *InitSessionAck) GetSessionID() int64 {
+func (x *InitSessionNtf) GetSessionID() int64 {
 	if x != nil {
 		return x.SessionID
 	}
 	return 0
 }
 
+type InitConnectionNtf struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ServerID       int64          `protobuf:"varint,1,opt,name=serverID,proto3" json:"serverID,omitempty"` // 全局唯一
+	ConnectionType ConnectionType `protobuf:"varint,2,opt,name=connectionType,proto3,enum=proto.ConnectionType" json:"connectionType,omitempty"`
+}
+
+func (x *InitConnectionNtf) Reset() {
+	*x = InitConnectionNtf{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_session_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *InitConnectionNtf) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InitConnectionNtf) ProtoMessage() {}
+
+func (x *InitConnectionNtf) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_session_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InitConnectionNtf.ProtoReflect.Descriptor instead.
+func (*InitConnectionNtf) Descriptor() ([]byte, []int) {
+	return file_proto_session_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *InitConnectionNtf) GetServerID() int64 {
+	if x != nil {
+		return x.ServerID
+	}
+	return 0
+}
+
+func (x *InitConnectionNtf) GetConnectionType() ConnectionType {
+	if x != nil {
+		return x.ConnectionType
+	}
+	return ConnectionType_ConnectionType_Default
+}
+
 var File_proto_session_proto protoreflect.FileDescriptor
 
 var file_proto_session_proto_rawDesc = []byte{
 	0x0a, 0x13, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x5f, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x5f, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0x2e, 0x0a, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x65,
-	0x71, 0x12, 0x1c, 0x0a, 0x09, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x22,
-	0x56, 0x0a, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x41, 0x63,
-	0x6b, 0x12, 0x26, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f,
-	0x64, 0x65, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x73, 0x65, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x73, 0x65,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x42, 0x31, 0x5a, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x61, 0x74, 0x69, 0x63, 0x61, 0x74, 0x2f, 0x67, 0x6f,
-	0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x65, 0x78, 0x61,
-	0x6d, 0x70, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x09, 0x0a, 0x07,
+	0x54, 0x69, 0x63, 0x6b, 0x4e, 0x74, 0x66, 0x22, 0x2e, 0x0a, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x53,
+	0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x4e, 0x74, 0x66, 0x12, 0x1c, 0x0a, 0x09, 0x73, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x73, 0x65,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x44, 0x22, 0x6e, 0x0a, 0x11, 0x49, 0x6e, 0x69, 0x74, 0x43,
+	0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4e, 0x74, 0x66, 0x12, 0x1a, 0x0a, 0x08,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x49, 0x44, 0x12, 0x3d, 0x0a, 0x0e, 0x63, 0x6f, 0x6e, 0x6e,
+	0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e,
+	0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0e, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x2a, 0x7b, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x6e, 0x65,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1a, 0x0a, 0x16, 0x43, 0x6f, 0x6e,
+	0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x5f, 0x44, 0x65, 0x66, 0x61,
+	0x75, 0x6c, 0x74, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x5f, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x10, 0x01,
+	0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79,
+	0x70, 0x65, 0x5f, 0x54, 0x65, 0x73, 0x74, 0x31, 0x10, 0x02, 0x12, 0x18, 0x0a, 0x14, 0x43, 0x6f,
+	0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x5f, 0x54, 0x65, 0x73,
+	0x74, 0x32, 0x10, 0x03, 0x42, 0x31, 0x5a, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x63, 0x61, 0x74, 0x69, 0x63, 0x61, 0x74, 0x2f, 0x67, 0x6f, 0x5f, 0x67, 0x61,
+	0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c,
+	0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -155,14 +255,16 @@ func file_proto_session_proto_rawDescGZIP() []byte {
 	return file_proto_session_proto_rawDescData
 }
 
-var file_proto_session_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_session_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_session_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_session_proto_goTypes = []interface{}{
-	(*InitSessionReq)(nil), // 0: proto.InitSessionReq
-	(*InitSessionAck)(nil), // 1: proto.InitSessionAck
-	(ErrorCode)(0),         // 2: proto.ErrorCode
+	(ConnectionType)(0),       // 0: proto.ConnectionType
+	(*TickNtf)(nil),           // 1: proto.TickNtf
+	(*InitSessionNtf)(nil),    // 2: proto.InitSessionNtf
+	(*InitConnectionNtf)(nil), // 3: proto.InitConnectionNtf
 }
 var file_proto_session_proto_depIdxs = []int32{
-	2, // 0: proto.InitSessionAck.error:type_name -> proto.ErrorCode
+	0, // 0: proto.InitConnectionNtf.connectionType:type_name -> proto.ConnectionType
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -175,10 +277,9 @@ func file_proto_session_proto_init() {
 	if File_proto_session_proto != nil {
 		return
 	}
-	file_proto_error_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_proto_session_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InitSessionReq); i {
+			switch v := v.(*TickNtf); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -190,7 +291,19 @@ func file_proto_session_proto_init() {
 			}
 		}
 		file_proto_session_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InitSessionAck); i {
+			switch v := v.(*InitSessionNtf); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_session_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*InitConnectionNtf); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -207,13 +320,14 @@ func file_proto_session_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_session_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_proto_session_proto_goTypes,
 		DependencyIndexes: file_proto_session_proto_depIdxs,
+		EnumInfos:         file_proto_session_proto_enumTypes,
 		MessageInfos:      file_proto_session_proto_msgTypes,
 	}.Build()
 	File_proto_session_proto = out.File

@@ -1,0 +1,10 @@
+# go run . -c="server3.yaml"
+
+id: 3
+connection_type: 2
+
+# port: 6670
+port_in: 6671
+
+log:
+  level: 1

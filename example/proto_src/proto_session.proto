@@ -1,14 +1,27 @@
 syntax = "proto3";
-import "proto_error.proto";
+// import "proto_error.proto";
 package proto;
 option go_package = "github.com/caticat/go_game_server/example/proto";
 
-message InitSessionReq
+enum ConnectionType
+{
+	ConnectionType_Default = 0; // 默认连接类型
+	ConnectionType_Client = 1; // 客户端类型
+	ConnectionType_Test1 = 2; // 测试服务器类型
+	ConnectionType_Test2 = 3; // 测试服务器类型
+}
+
+message TickNtf
+{
+}
+
+message InitSessionNtf
 {
 	int64 sessionID = 1;
 }
-message InitSessionAck
+
+message InitConnectionNtf
 {
-	ErrorCode error = 1;
-	int64 sessionID = 2;
+	int64 serverID = 1; // 全局唯一
+	ConnectionType connectionType = 2;
 }

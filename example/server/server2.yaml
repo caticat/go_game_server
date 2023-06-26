@@ -1,5 +1,16 @@
-# go run . -c=server2.yaml
+# go run . -c="server2.yaml"
 
-port: 6667
+id: 2
+connection_type: 3
+
+# port: 6668
+port_in: 6669
+
 log:
   level: 1
+
+remote_server:
+  - server_id: 3
+    connection_type: 2
+    ip: 127.0.0.1
+    port: 6671

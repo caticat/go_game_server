@@ -3,8 +3,13 @@
 # TODO: 最终这个配置文件应该只有自己的ID编号和ETCD的地址
 #       其他配置都放在ETCD中
 
+id: 1
+connection_type: 2
+
 # 对外端口
 port: 6666
+# 对内端口
+# port_in: 6667
 
 # 日志
 log:
@@ -13,7 +18,11 @@ log:
 
 # 主动连接服务器
 remote_server:
-  - ip: 127.0.0.1
-    port: 6667
-  # - ip: 127.0.0.1
-  #   port: 6668
+  - server_id: 2
+    connection_type: 3
+    ip: 127.0.0.1
+    port: 6669
+  - server_id: 3
+    connection_type: 2
+    ip: 127.0.0.1
+    port: 6671

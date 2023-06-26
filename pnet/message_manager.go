@@ -2,6 +2,7 @@ package pnet
 
 import (
 	"github.com/caticat/go_game_server/plog"
+	"google.golang.org/protobuf/proto"
 )
 
 type messageHandler_t func(*PRecvData) bool
@@ -39,4 +40,8 @@ func (t *PMessageManager) Trigger(r *PRecvData) bool {
 	}
 
 	return fun(r)
+}
+
+func (t *PMessageManager) Handle(s *PSocket, msgID int32, msg proto.Message) bool {
+	return t.Trigger(NewPRecvData(s, NewPMessage(msgID, msg)))
 }

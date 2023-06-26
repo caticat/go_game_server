@@ -2,6 +2,7 @@ package pnet
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net"
 
@@ -11,24 +12,33 @@ import (
 const PSocket_ChanLen = 10 // 收发消息阻塞长度
 
 type PSocket struct {
-	m_conn      net.Conn
-	m_chaSend   chan *PMessage
-	m_chaRecv   chan *PRecvData
-	m_sessionID int64
+	m_conn              net.Conn
+	m_chaSend           chan *PMessage
+	m_chaRecv           chan *PRecvData
+	m_sessionID         int64 // sessionID/serverID共用字段,同时只能存在一个
+	m_connType          int
+	m_isInnerConnection bool
 }
 
-func (t *PSocket) getConn() net.Conn            { return t.m_conn }
-func (t *PSocket) getChaSend() chan *PMessage   { return t.m_chaSend }
-func (t *PSocket) getChaRecv() chan *PRecvData  { return t.m_chaRecv }
-func (t *PSocket) GetSessionID() int64          { return t.m_sessionID }
-func (t *PSocket) SetSessionID(sessionID int64) { t.m_sessionID = sessionID }
-func (t *PSocket) GetHost() string              { return t.m_conn.RemoteAddr().String() }
+func (t *PSocket) getConn() net.Conn                     { return t.m_conn }
+func (t *PSocket) getChaSend() chan *PMessage            { return t.m_chaSend }
+func (t *PSocket) getChaRecv() chan *PRecvData           { return t.m_chaRecv }
+func (t *PSocket) GetSessionID() int64                   { return t.m_sessionID }
+func (t *PSocket) SetSessionID(sessionID int64)          { t.m_sessionID = sessionID }
+func (t *PSocket) GetServerID() int64                    { return t.m_sessionID }
+func (t *PSocket) SetServerID(serverID int64)            { t.m_sessionID = serverID }
+func (t *PSocket) GetHost() string                       { return t.m_conn.RemoteAddr().String() }
+func (t *PSocket) GetConnectionType() int                { return t.m_connType }
+func (t *PSocket) SetConnectionType(connType int)        { t.m_connType = connType }
+func (t *PSocket) GetIsInnerConnection() bool            { return t.m_isInnerConnection }
+func (t *PSocket) SetIsInnerConnection(isInnerConn bool) { t.m_isInnerConnection = isInnerConn }
 
 func NewPSocket(c net.Conn, chaRecv chan *PRecvData) *PSocket {
 	t := &PSocket{
-		m_conn:    c,
-		m_chaSend: make(chan *PMessage, PSocket_ChanLen),
-		m_chaRecv: chaRecv,
+		m_conn:              c,
+		m_chaSend:           make(chan *PMessage, PSocket_ChanLen),
+		m_chaRecv:           chaRecv,
+		m_isInnerConnection: false,
 	}
 	return t
 }
@@ -38,7 +48,7 @@ func (t *PSocket) Start() {
 	go t.runRecv()
 }
 
-func (t *PSocket) Send(m *PMessage) { t.m_chaSend <- m }
+func (t *PSocket) Send(m *PMessage) { t.getChaSend() <- m }
 
 func (t *PSocket) runSend() {
 	for data := range t.getChaSend() {
@@ -49,7 +59,7 @@ func (t *PSocket) runSend() {
 	// 	select {
 	// 	case data := <-t.getChaSend():
 	// 		t.send(data)
-	// TODO: 是否需要退出循环
+	// 		// TODO: 是否需要退出循环
 	// 	}
 	// }
 }
@@ -109,4 +119,17 @@ func (t *PSocket) send(data *PMessage) {
 func (t *PSocket) Close() {
 	GetSocketMgr().OnDisconnect(t)
 	t.getConn().Close()
+}
+
+func (t *PSocket) String() string {
+	strID := "SessionID"
+	if t.GetIsInnerConnection() {
+		strID = "ServerID"
+	}
+	return fmt.Sprintf("Host:[%q],%v:%v,InInner:%v,ConnectionType:%v",
+		t.getConn().RemoteAddr().String(),
+		strID,
+		t.GetSessionID(),
+		t.GetIsInnerConnection(),
+		t.GetConnectionType())
 }

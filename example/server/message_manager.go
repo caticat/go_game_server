@@ -19,16 +19,35 @@ func NewMessageManager() *MessageManager {
 
 func (t *MessageManager) Init() {
 	// 消息待注册
-	t.Regist(int32(pproto.MsgID_InitSessionReqID), t.initSessionReqID)
-	t.Regist(int32(pproto.MsgID_InitSessionAckID), t.initSessionAckID)
+	t.Regist(int32(pproto.MsgID_TickNtfID), t.tickNtfID)
+	t.Regist(int32(pproto.MsgID_InitSessionNtfID), t.initSessionNtfID)
+	t.Regist(int32(pproto.MsgID_InitConnectionNtfID), t.initConnectionNtfID)
 	t.Regist(int32(pproto.MsgID_HelloReqID), t.helloReqHandler)
 }
 
-func (t *MessageManager) initSessionReqID(r *pnet.PRecvData) bool {
+func (t *MessageManager) tickNtfID(r *pnet.PRecvData) bool {
 	// 参数校验
 	s := r.GetSocket()
 	if s == nil {
 		plog.ErrorLn("s == nil")
+		return false
+	}
+
+	// 逻辑处理
+	plog.DebugF("收到服务器[%s]心跳包\n", s)
+
+	return false
+}
+
+func (t *MessageManager) initSessionNtfID(r *pnet.PRecvData) bool {
+	// 参数校验
+	s := r.GetSocket()
+	if s == nil {
+		plog.ErrorLn("s == nil")
+		return false
+	}
+	if s.GetIsInnerConnection() {
+		plog.ErrorLn("s.GetIsInnerConnection(),can't set sessionID")
 		return false
 	}
 	m := r.GetMessage()
@@ -36,7 +55,7 @@ func (t *MessageManager) initSessionReqID(r *pnet.PRecvData) bool {
 		plog.ErrorLn("msg == nil")
 		return false
 	}
-	msg := &pproto.InitSessionReq{}
+	msg := &pproto.InitSessionNtf{}
 	m.Unmarshal(msg)
 
 	if s.GetSessionID() != 0 {
@@ -46,25 +65,23 @@ func (t *MessageManager) initSessionReqID(r *pnet.PRecvData) bool {
 
 	// 逻辑处理
 	sessionID := msg.GetSessionID()
+	plog.DebugLn("收到客户端连接初始化,sessionID:", sessionID)
 	s.SetSessionID(sessionID)
+	s.SetConnectionType(int(pproto.ConnectionType_ConnectionType_Client))
 	getSocketManager().Add(s)
-	plog.DebugLn("连接初始化:", sessionID)
-
-	// 返回协议
-	a := &pproto.InitSessionAck{
-		Error:     pproto.ErrorCode_OK,
-		SessionID: sessionID,
-	}
-	s.Send(pnet.NewPMessage(int32(pproto.MsgID_InitSessionAckID), a))
 
 	return false
 }
 
-func (t *MessageManager) initSessionAckID(r *pnet.PRecvData) bool {
+func (t *MessageManager) initConnectionNtfID(r *pnet.PRecvData) bool {
 	// 参数校验
 	s := r.GetSocket()
 	if s == nil {
 		plog.ErrorLn("s == nil")
+		return false
+	}
+	if !s.GetIsInnerConnection() {
+		plog.ErrorLn("!s.GetIsInnerConnection(),can't set serverID")
 		return false
 	}
 	m := r.GetMessage()
@@ -72,17 +89,16 @@ func (t *MessageManager) initSessionAckID(r *pnet.PRecvData) bool {
 		plog.ErrorLn("msg == nil")
 		return false
 	}
-	msg := &pproto.InitSessionAck{}
+	msg := &pproto.InitConnectionNtf{}
 	m.Unmarshal(msg)
 
 	// 逻辑处理
-	plog.DebugLn("收到返回:", m.GetMsgID(), msg.GetError(), msg.GetSessionID())
-
-	// 测试发送协议
-	a := &pproto.HelloReq{
-		Msg: "收到返回了!!!",
-	}
-	s.Send(pnet.NewPMessage(int32(pproto.MsgID_HelloReqID), a))
+	serverID := msg.GetServerID()
+	connectionType := msg.GetConnectionType()
+	plog.DebugF("收到服务端连接初始化,serverID:%v,connectionType:%v\n", serverID, connectionType)
+	s.SetServerID(serverID)
+	s.SetConnectionType(int(connectionType))
+	getSocketManager().Add(s)
 
 	return false
 }

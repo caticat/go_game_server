@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	ChaRecvLen = 100
+	ChaRecvLen             = 100
+	ChaMainLoopFun         = 10
+	TimePrecision    int64 = 1000
+	TimeMinuteSecond int64 = 60
 	// FileConfig = "server.yaml"
 )
 
@@ -19,9 +22,12 @@ var (
 )
 
 type ConfServer struct {
-	Port          int                      `yaml:"port"`
-	Log           *ConfLog                 `yaml:"log"`
-	RemoteServers []*pnet.ConfRemoteServer `yaml:"remote_server"`
+	ID             int64                    `yaml:"id"`
+	ConnectionType int                      `yaml:"connection_type"`
+	Port           int                      `yaml:"port"`
+	PortIn         int                      `yaml:"port_in"`
+	Log            *ConfLog                 `yaml:"log"`
+	RemoteServers  []*pnet.ConfRemoteServer `yaml:"remote_server"`
 }
 
 func NewConfServer() *ConfServer {
@@ -43,9 +49,16 @@ func (t *ConfServer) Init() {
 	if err != nil {
 		plog.FatalLn("yaml.Unmarshal failed,error:", err)
 	}
+
+	if t.GetID() <= 0 {
+		plog.FatalLn("config id <= 0")
+	}
 }
 
+func (t *ConfServer) GetID() int64                               { return t.ID }
+func (t *ConfServer) GetConnectionType() int                     { return t.ConnectionType }
 func (t *ConfServer) GetPort() int                               { return t.Port }
+func (t *ConfServer) GetPortIn() int                             { return t.PortIn }
 func (t *ConfServer) GetLog() *ConfLog                           { return t.Log }
 func (t *ConfServer) GetRemoteServers() []*pnet.ConfRemoteServer { return t.RemoteServers }
 

@@ -12,13 +12,13 @@ import (
 type ELogLevel int
 
 const (
-	ELogLevel_None  ELogLevel = 0
-	ELogLevel_Debug ELogLevel = 1
-	ELogLevel_Info  ELogLevel = 2
-	ELogLevel_Warn  ELogLevel = 3
-	ELogLevel_Error ELogLevel = 4
-	ELogLevel_Fatal ELogLevel = 5
-	ELogLevel_Panic ELogLevel = 6
+	ELogLevel_None ELogLevel = iota
+	ELogLevel_Debug
+	ELogLevel_Info
+	ELogLevel_Warn
+	ELogLevel_Error
+	ELogLevel_Fatal
+	ELogLevel_Panic
 )
 
 func Init(l ELogLevel, logFile string) {
