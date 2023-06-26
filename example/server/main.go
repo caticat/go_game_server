@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/caticat/go_game_server/example/server/conf"
@@ -12,6 +14,7 @@ var (
 	g_socketManager  = NewSocketManager()
 	g_messageManager = NewMessageManager()
 	g_conf           = conf.NewConfServer()
+	g_chaSig         = make(chan os.Signal, 1)
 )
 
 func main() {
@@ -23,6 +26,9 @@ func main() {
 }
 
 func initServer() {
+	// 信号
+	signal.Notify(g_chaSig, os.Interrupt)
+
 	// 配置
 	c := getConf()
 	c.Init()
@@ -54,8 +60,15 @@ func run() {
 			f()
 		case <-t:
 			runTimer(time.Now().Local().UnixMilli())
+		case s := <-g_chaSig:
+			onExit(s)
+			return
 		}
 	}
+}
+
+func onExit(s os.Signal) {
+	plog.InfoLn("receive signal:", s)
 }
 
 func getSocketManager() *SocketManager   { return g_socketManager }

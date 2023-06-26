@@ -21,6 +21,7 @@ type PSocket struct {
 }
 
 func (t *PSocket) getConn() net.Conn                     { return t.m_conn }
+func (t *PSocket) setConn(c net.Conn)                    { t.m_conn = c }
 func (t *PSocket) getChaSend() chan *PMessage            { return t.m_chaSend }
 func (t *PSocket) getChaRecv() chan *PRecvData           { return t.m_chaRecv }
 func (t *PSocket) GetSessionID() int64                   { return t.m_sessionID }
@@ -48,7 +49,13 @@ func (t *PSocket) Start() {
 	go t.runRecv()
 }
 
-func (t *PSocket) Send(m *PMessage) { t.getChaSend() <- m }
+func (t *PSocket) Send(m *PMessage) {
+	if t.getConn() == nil {
+		plog.ErrorLn("t.getConn() == nil,socket not connected")
+		return
+	}
+	t.getChaSend() <- m
+}
 
 func (t *PSocket) runSend() {
 	for data := range t.getChaSend() {
@@ -117,8 +124,11 @@ func (t *PSocket) send(data *PMessage) {
 }
 
 func (t *PSocket) Close() {
-	GetSocketMgr().OnDisconnect(t)
+	if sm := GetSocketMgr(); sm != nil {
+		sm.OnDisconnect(t)
+	}
 	t.getConn().Close()
+	t.setConn(nil)
 }
 
 func (t *PSocket) String() string {
