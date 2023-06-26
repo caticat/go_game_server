@@ -19,11 +19,16 @@ func main() {
 	c.Init()
 	plog.Init(c.GetLog().GetLevel(), c.GetLog().GetFile())
 	getMessageManager().Init()
+	initServer()
 
 	go run()
 	pnet.Init(getSocketManager())
 	pnet.Connect(getConf().GetRemoteServers())
 	pnet.ListenAndServe(getConf().GetPort(), getConf().GetPortIn())
+}
+
+func initServer() {
+	initTimer()
 }
 
 func run() {

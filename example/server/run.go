@@ -4,28 +4,24 @@ import (
 	"github.com/caticat/go_game_server/example/proto"
 	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/pnet"
+	"github.com/caticat/go_game_server/ptime"
 )
 
 var (
-	unixTimeLast       int64 = 0
-	unixTimeLastMinute int64 = 0
+	g_ticker1s *ptime.PTicker
+	g_ticker1m *ptime.PTicker
 )
+
+func initTimer() {
+	g_ticker1s = ptime.NewPTicker(1, runSecond)
+	g_ticker1m = ptime.NewPTicker(conf.TimeMinuteSecond, runMinute)
+}
 
 func runTimer(unixTimeNowMill int64) {
 	unixTimeNow := unixTimeNowMill / conf.TimePrecision
-	if unixTimeLast == 0 {
-		unixTimeLast = unixTimeNowMill / conf.TimePrecision
-		unixTimeLastMinute = unixTimeLast + conf.TimeMinuteSecond
-	}
 
-	if unixTimeNow != unixTimeLast {
-		unixTimeLast = unixTimeNow
-		runSecond(unixTimeNow)
-	}
-	if unixTimeNow >= unixTimeLastMinute {
-		unixTimeLastMinute = unixTimeNow + conf.TimeMinuteSecond
-		runMinute(unixTimeNow)
-	}
+	g_ticker1s.TryRun(unixTimeNow)
+	g_ticker1m.TryRun(unixTimeNow)
 }
 
 func runSecond(unixTimeNow int64) {
