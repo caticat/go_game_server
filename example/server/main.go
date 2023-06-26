@@ -15,20 +15,31 @@ var (
 )
 
 func main() {
-	c := getConf()
-	c.Init()
-	plog.Init(c.GetLog().GetLevel(), c.GetLog().GetFile())
-	getMessageManager().Init()
+	// 初始化
 	initServer()
 
-	go run()
-	pnet.Init(getSocketManager())
-	pnet.Connect(getConf().GetRemoteServers())
-	pnet.ListenAndServe(getConf().GetPort(), getConf().GetPortIn())
+	// 主线程
+	run()
 }
 
 func initServer() {
+	// 配置
+	c := getConf()
+	c.Init()
+
+	// 日志
+	plog.Init(c.GetLog().GetLevel(), c.GetLog().GetFile())
+
+	// 协议
+	getMessageManager().Init()
+
+	// 定时器
 	initTimer()
+
+	// 网络
+	pnet.Init(getSocketManager())
+	pnet.Connect(getConf().GetRemoteServers())
+	go pnet.ListenAndServe(getConf().GetPort(), getConf().GetPortIn())
 }
 
 func run() {
