@@ -69,6 +69,7 @@ func run() {
 
 func onExit(s os.Signal) {
 	plog.InfoLn("receive signal:", s)
+	getSocketManager().Close()
 }
 
 func getSocketManager() *SocketManager   { return g_socketManager }

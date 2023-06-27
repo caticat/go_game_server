@@ -26,6 +26,7 @@ type PSocketManager interface {
 	GetAll() map[int64]*PSocket
 	GetServer(int64) *PSocket
 	GetServerAll() map[int64]*PSocket
+	Close()
 }
 
 type PRecvData struct {

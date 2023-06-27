@@ -36,6 +36,7 @@ func listenAndServe(port int, isInnerConnection bool) {
 	if err != nil {
 		plog.PanicLn(err)
 	}
+	defer l.Close()
 
 	for {
 		conn, err := l.Accept()

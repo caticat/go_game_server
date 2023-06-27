@@ -191,3 +191,15 @@ func (t *SocketManager) GetServer(sessionID int64) *pnet.PSocket {
 func (t *SocketManager) GetServerAll() map[int64]*pnet.PSocket {
 	return t.m_mapSocketServer
 }
+
+func (t *SocketManager) Close() {
+	m := t.GetAll()
+	for _, s := range m {
+		s.Close()
+	}
+
+	m = t.GetServerAll()
+	for _, s := range m {
+		s.Close()
+	}
+}

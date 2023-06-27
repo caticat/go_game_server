@@ -31,6 +31,7 @@ func main() {
 		plog.PanicLn("g_s == nil")
 	}
 	g_s.Start()
+	defer g_s.Close()
 
 	// 收取协议
 	go run()
