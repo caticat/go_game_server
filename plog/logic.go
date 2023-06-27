@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/caticat/go_game_server/ptime"
 )
 
 const (
@@ -37,18 +39,18 @@ var (
 	g_logLevelPre = ELogLevel_None
 
 	// 日志文件名逻辑
-	g_logFileHour          = -1
-	g_logFile     *os.File = nil
+	g_logFileScrollTime int64    = -1
+	g_logFile           *os.File = nil
 )
 
-func getLogLevel() ELogLevel    { return g_logLevel }
-func setLogLevel(l ELogLevel)   { g_logLevel = l }
-func getLogFilePrefix() string  { return g_logFilePrefix }
-func setLogFilePrefix(f string) { g_logFilePrefix = f }
-func getLogFileHour() int       { return g_logFileHour }
-func setLogFileHour(hour int)   { g_logFileHour = hour }
-func getLogFile() *os.File      { return g_logFile }
-func setLogFile(f *os.File)     { g_logFile = f }
+func getLogLevel() ELogLevel       { return g_logLevel }
+func setLogLevel(l ELogLevel)      { g_logLevel = l }
+func getLogFilePrefix() string     { return g_logFilePrefix }
+func setLogFilePrefix(f string)    { g_logFilePrefix = f }
+func getLogFileScrollTime() int64  { return g_logFileScrollTime }
+func setLogFileScrollTime(t int64) { g_logFileScrollTime = t }
+func getLogFile() *os.File         { return g_logFile }
+func setLogFile(f *os.File)        { g_logFile = f }
 
 func doLog(l ELogLevel, v ...any) {
 	if l < getLogLevel() {
@@ -97,11 +99,11 @@ func checkLogFile() {
 	if len(getLogFilePrefix()) == 0 {
 		return
 	}
-	n := time.Now()
-	if n.Hour() == getLogFileHour() {
+	n := time.Now().Local()
+	if n.Unix() < getLogFileScrollTime() {
 		return
 	}
-	setLogFileHour(n.Hour())
+	setLogFileScrollTime(ptime.GetNextHourTime(n))
 
 	f := getLogFile()
 	if f != nil {
