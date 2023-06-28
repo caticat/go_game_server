@@ -2,8 +2,10 @@ go 1.20
 
 use (
 	./example/client
+	./example/playground
 	./example/proto
 	./example/server
+	./petcd
 	./plog
 	./pnet
 	./ptime
