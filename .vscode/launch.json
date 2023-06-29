@@ -29,5 +29,12 @@
 			"mode": "auto",
 			"program": "example/playground"
 		},
+		{
+			"name": "Launch EtcdInit",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "example/etcd_init"
+		},
 	]
 }

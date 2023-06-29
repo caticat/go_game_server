@@ -16,7 +16,9 @@ func main() {
 	// testETCD()
 	// testETCDLease()
 	// testPETCD()
-	testPETCDWatch()
+	// testPETCDWatch()
+	// testPETCDFlushDB()
+	testPETCDCompact()
 }
 
 func testETCD() {
@@ -106,8 +108,8 @@ func testETCDLease() {
 func testPETCD() {
 	t := petcd.NewConfigEtcd()
 	t.Endpoints = append(t.Endpoints, "http://127.0.0.1:2379")
-	t.DialTimeout = time.Second
-	t.OperationTimeout = time.Second
+	t.DialTimeout = 1
+	t.OperationTimeout = 1
 	t.LeaseTimeoutBeforeKeepAlive = 30
 	petcd.Init(t)
 	defer petcd.Close()
@@ -137,8 +139,8 @@ func testPETCD() {
 func testPETCDWatch() {
 	t := petcd.NewConfigEtcd()
 	t.Endpoints = append(t.Endpoints, "http://127.0.0.1:2379")
-	t.DialTimeout = time.Second
-	t.OperationTimeout = time.Second
+	t.DialTimeout = 1
+	t.OperationTimeout = 1
 	t.LeaseTimeoutBeforeKeepAlive = 10
 	petcd.Init(t)
 	defer petcd.Close()
@@ -193,4 +195,31 @@ func testPETCDWatch() {
 			}
 		}
 	}
+}
+
+func testPETCDFlushDB() {
+	t := petcd.NewConfigEtcd()
+	t.Endpoints = append(t.Endpoints, "http://127.0.0.1:2379")
+	t.DialTimeout = 1
+	t.OperationTimeout = 1
+	t.LeaseTimeoutBeforeKeepAlive = 10
+	petcd.Init(t)
+	defer petcd.Close()
+
+	plog.InfoLn(petcd.FlushDB())
+}
+
+func testPETCDCompact() {
+	t := petcd.NewConfigEtcdInit()
+	t.ConfigEtcd.Endpoints = append(t.ConfigEtcd.Endpoints, "http://127.0.0.1:2379")
+	t.ConfigEtcd.DialTimeout = 1
+	t.ConfigEtcd.OperationTimeout = 1
+	t.ConfigEtcd.LeaseTimeoutBeforeKeepAlive = 10
+
+	t.FlushDB = true
+	t.EtcdKVList = append(t.EtcdKVList, petcd.NewEtcdKV("/server/127.0.0.1:60001", "alive"))
+	t.EtcdKVList = append(t.EtcdKVList, petcd.NewEtcdKV("/server/127.0.0.1:60002", "alive"))
+	t.EtcdKVList = append(t.EtcdKVList, petcd.NewEtcdKV("/server/127.0.0.1:60003", "alive"))
+
+	petcd.ProcessEtcdInit(t)
 }

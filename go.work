@@ -2,6 +2,7 @@ go 1.20
 
 use (
 	./example/client
+	./example/etcd_init
 	./example/playground
 	./example/proto
 	./example/server

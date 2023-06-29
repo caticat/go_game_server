@@ -1,0 +1,23 @@
+# 初始化ETCD数据
+
+# etcd连接配置
+etcd: 
+  endpoints:
+    - "127.0.0.1:2379"
+  dial-timeout: 1
+  operation-timeout: 1
+  lease-timeout-before-keep-alive: 10
+
+# 是否清空数据库
+flush_db: true
+
+# 需要初始化的键值对
+list_key_value:
+  - key: /test/a
+    value: 1
+  - key: /test/b
+    value: 2
+  - key: /test/c
+    value: 3
+  - key: /hello
+    value: world9

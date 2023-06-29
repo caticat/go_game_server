@@ -24,7 +24,7 @@ func Init(cfg *ConfigEtcd) error {
 			setClient(cli)
 
 			// 初始化lease
-			ctx, cancel := context.WithTimeout(context.Background(), cfg.OperationTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
 			resp, err := cli.Lease.Grant(ctx, cfg.LeaseTimeoutBeforeKeepAlive)
 			cancel()
 			if err != nil {
@@ -73,12 +73,8 @@ func Put(key, val string, opts ...clientv3.OpOption) error {
 	if cli == nil {
 		return ErrorNilClient
 	}
-	cfg := getConfig()
-	if cfg == nil {
-		return ErrorNilConfig
-	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.OperationTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
 	defer cancel()
 	_, err := cli.Put(ctx, key, val, opts...)
 
@@ -95,12 +91,8 @@ func Get(key string, mapResult map[string]string, opts ...clientv3.OpOption) err
 	if cli == nil {
 		return ErrorNilClient
 	}
-	cfg := getConfig()
-	if cfg == nil {
-		return ErrorNilConfig
-	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.OperationTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
 	defer cancel()
 	resp, err := cli.Get(ctx, key, opts...)
 	if err != nil {
@@ -140,12 +132,8 @@ func Del(key string, opts ...clientv3.OpOption) error {
 	if cli == nil {
 		return ErrorNilClient
 	}
-	cfg := getConfig()
-	if cfg == nil {
-		return ErrorNilConfig
-	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.OperationTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
 	defer cancel()
 	_, err := cli.Delete(ctx, key, opts...)
 	if err != nil {
@@ -171,6 +159,62 @@ func Watch(key string, fun funWatchCallback_t, opts ...clientv3.OpOption) error 
 
 func WatchPrefix(prefix string, fun funWatchCallback_t) error {
 	return Watch(prefix, fun, clientv3.WithPrefix())
+}
+
+// 清空数据库
+func FlushDB() error {
+	if err := Del("", clientv3.WithPrefix()); err != nil {
+		return err
+	}
+
+	if err := Compact(); err != nil {
+		return err
+	}
+
+	if err := Defrag(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 清理历史版本数据记录
+func Compact() error {
+	cli := getClient()
+	if cli == nil {
+		return ErrorNilClient
+	}
+
+	revisionID, err := getRevision()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
+	defer cancel()
+	_, err = cli.Compact(ctx, revisionID)
+
+	return err
+}
+
+// 恢复硬盘空间
+func Defrag() error {
+	cli := getClient()
+	if cli == nil {
+		return ErrorNilClient
+	}
+	cfg := getConfig()
+	if cfg == nil {
+		return ErrorNilConfig
+	}
+
+	for _, ep := range cfg.Endpoints {
+		ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout()) // MARK: 这里的超时时间可能过短
+		defer cancel()
+		cli.Defragment(ctx, ep)
+	}
+
+	return nil
 }
 
 func TrimPrefix(s, prefix string) string {

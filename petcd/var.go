@@ -3,7 +3,9 @@ package petcd
 import (
 	"context"
 	"sync"
+	"time"
 
+	"github.com/caticat/go_game_server/plog"
 	"go.etcd.io/etcd/clientv3"
 )
 
@@ -27,3 +29,12 @@ func getLeaseCancel() context.CancelFunc        { return g_leaseCancel }
 func setLeaseCancel(f context.CancelFunc)       { g_leaseCancel = f }
 func getSliCancelWatch() []context.CancelFunc   { return g_sliCancelWatch }
 func appendSliCancelWatch(c context.CancelFunc) { g_sliCancelWatch = append(g_sliCancelWatch, c) }
+
+func getConfigOperationTimeout() time.Duration {
+	cfg := getConfig()
+	if cfg == nil {
+		plog.ErrorLn(ErrorNilConfig)
+		return time.Second
+	}
+	return time.Second * time.Duration(cfg.OperationTimeout)
+}

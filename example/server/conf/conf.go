@@ -6,7 +6,7 @@ import (
 
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
