@@ -20,4 +20,4 @@ list_key_value:
   - key: /test/c
     value: 3
   - key: /hello
-    value: world9
+    value: '{"name": "John Doe", "age": 18, "address": {"country" : "china", "zip-code": "10000"}}'
