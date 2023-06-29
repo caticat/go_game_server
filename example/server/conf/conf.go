@@ -22,12 +22,12 @@ var (
 )
 
 type ConfServer struct {
-	ID             int64                    `yaml:"id"`
-	ConnectionType int                      `yaml:"connection_type"`
-	Port           int                      `yaml:"port"`
-	PortIn         int                      `yaml:"port_in"`
-	Log            *ConfLog                 `yaml:"log"`
-	RemoteServers  []*pnet.ConfRemoteServer `yaml:"remote_server"`
+	ID             int64                    `yaml:"id" json:"id"`
+	ConnectionType int                      `yaml:"connection_type" json:"connection_type"`
+	Port           int                      `yaml:"port" json:"port"`
+	PortIn         int                      `yaml:"port_in" json:"port_in"`
+	Log            *ConfLog                 `yaml:"log" json:"log"`
+	RemoteServers  []*pnet.ConfRemoteServer `yaml:"remote_server" json:"remote_server"`
 }
 
 func NewConfServer() *ConfServer {
