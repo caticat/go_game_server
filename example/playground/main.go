@@ -18,13 +18,13 @@ func main() {
 	// testPETCD()
 	// testPETCDWatch()
 	// testPETCDFlushDB()
-	testPETCDCompact()
+	// testPETCDCompact()
 }
 
 func testETCD() {
 	plog.InfoLn("init client")
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"http://127.0.0.1:2379"},
+		Endpoints:   []string{"http://localhost:60001", "http://localhost:60002", "http://localhost:60003"},
 		DialTimeout: 2 * time.Second,
 	})
 	if err != nil {
@@ -34,7 +34,7 @@ func testETCD() {
 
 	plog.InfoLn("begin put")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	_, err = cli.Put(ctx, "/tmp", "tmp_value")
+	_, err = cli.Put(ctx, "/tmp", "tmp_value1")
 	cancel()
 	if err != nil {
 		plog.FatalLn("error:", err)
@@ -43,7 +43,7 @@ func testETCD() {
 	plog.InfoLn("begin get")
 	ctx, cancel = context.WithTimeout(context.Background(), time.Second*1)
 	// resp, err := cli.Get(ctx, "/tmp")
-	resp, err := cli.Get(ctx, "", clientv3.WithFromKey())
+	resp, err := cli.Get(ctx, "/", clientv3.WithFromKey())
 	cancel()
 	if err != nil {
 		plog.FatalLn("error:", err)
@@ -138,7 +138,7 @@ func testPETCD() {
 
 func testPETCDWatch() {
 	t := petcd.NewConfigEtcd()
-	t.Endpoints = append(t.Endpoints, "http://127.0.0.1:2379")
+	t.Endpoints = append(t.Endpoints, "http://localhost:60001", "http://localhost:60002", "http://localhost:60003")
 	t.DialTimeout = 1
 	t.OperationTimeout = 1
 	t.LeaseTimeoutBeforeKeepAlive = 10
@@ -211,7 +211,7 @@ func testPETCDFlushDB() {
 
 func testPETCDCompact() {
 	t := petcd.NewConfigEtcdInit()
-	t.ConfigEtcd.Endpoints = append(t.ConfigEtcd.Endpoints, "http://127.0.0.1:2379")
+	t.ConfigEtcd.Endpoints = append(t.ConfigEtcd.Endpoints, "http://localhost:60001", "http://localhost:60002", "http://localhost:60003")
 	t.ConfigEtcd.DialTimeout = 1
 	t.ConfigEtcd.OperationTimeout = 1
 	t.ConfigEtcd.LeaseTimeoutBeforeKeepAlive = 10
