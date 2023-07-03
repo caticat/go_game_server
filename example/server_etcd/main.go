@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/caticat/go_game_server/petcd"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
@@ -69,6 +70,7 @@ func run() {
 func onExit(s os.Signal) {
 	plog.InfoLn("receive signal:", s)
 	getSocketManager().Close()
+	petcd.Close()
 }
 
 func getSocketManager() *SocketManager   { return g_socketManager }

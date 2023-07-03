@@ -9,7 +9,7 @@ import (
 )
 
 // 拼接Key
-func FormatKey(args ...interface{}) string {
+func FormatKey(args ...any) string {
 	sliKey := make([]string, 0, len(args))
 	for _, k := range args {
 		sliKey = append(sliKey, fmt.Sprint(k))

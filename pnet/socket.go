@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime/debug"
 
 	"github.com/caticat/go_game_server/plog"
 )
@@ -28,11 +29,19 @@ func (t *PSocket) GetSessionID() int64                   { return t.m_sessionID 
 func (t *PSocket) SetSessionID(sessionID int64)          { t.m_sessionID = sessionID }
 func (t *PSocket) GetServerID() int64                    { return t.m_sessionID }
 func (t *PSocket) SetServerID(serverID int64)            { t.m_sessionID = serverID }
-func (t *PSocket) GetHost() string                       { return t.m_conn.RemoteAddr().String() }
 func (t *PSocket) GetConnectionType() int                { return t.m_connType }
 func (t *PSocket) SetConnectionType(connType int)        { t.m_connType = connType }
 func (t *PSocket) GetIsInnerConnection() bool            { return t.m_isInnerConnection }
 func (t *PSocket) SetIsInnerConnection(isInnerConn bool) { t.m_isInnerConnection = isInnerConn }
+func (t *PSocket) GetHost() string {
+	if c := t.m_conn; c != nil {
+		return c.RemoteAddr().String()
+	} else {
+		debug.PrintStack()
+		plog.ErrorLn("t.m_conn == nil,sessionID:", t.GetSessionID(), ",connType:", t.GetConnectionType())
+		return ""
+	}
+}
 
 func NewPSocket(c net.Conn, chaRecv chan *PRecvData) *PSocket {
 	t := &PSocket{
@@ -116,20 +125,31 @@ func (t *PSocket) send(data *PMessage) {
 }
 
 func (t *PSocket) Close() {
+	c := t.getConn()
+	if c == nil {
+		return
+	}
+
 	if sm := GetSocketMgr(); sm != nil {
+		debug.PrintStack()
 		sm.OnDisconnect(t)
 	}
-	t.getConn().Close()
+
+	c.Close()
 	t.setConn(nil)
 }
 
 func (t *PSocket) String() string {
+	addr := "?.?.?.?:?"
+	if c := t.getConn(); c != nil {
+		addr = c.RemoteAddr().String()
+	}
 	strID := "SessionID"
 	if t.GetIsInnerConnection() {
 		strID = "ServerID"
 	}
 	return fmt.Sprintf("Host:[%q],%v:%v,InInner:%v,ConnectionType:%v",
-		t.getConn().RemoteAddr().String(),
+		addr,
 		strID,
 		t.GetSessionID(),
 		t.GetIsInnerConnection(),
