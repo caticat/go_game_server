@@ -1,0 +1,58 @@
+# 初始化ETCD数据
+
+# etcd连接配置
+etcd: 
+  endpoints:
+    - localhost:60001
+    - localhost:60002
+    - localhost:60003
+  dial-timeout: 1
+  operation-timeout: 1
+  lease-timeout-before-keep-alive: 10
+
+# 是否清空数据库
+flush_db: true
+
+# 需要初始化的键值对
+list_key_value:
+  - key: /config/2/1
+    value: |
+      {
+        "ip":"127.0.0.1",
+        "port":6666,
+        "remote_server":
+        [
+          {
+            "server_id":2,
+            "connection_type":3
+          },
+          {
+            "server_id":3,
+            "connection_type":2
+          }
+        ],
+        "log":
+        {
+          "level": 1
+        }
+      }
+  - key: /config/3/2
+    value: |
+      {
+        "ip":"127.0.0.1",
+        "port_in":6669,
+        "log":
+        {
+          "level": 1
+        }
+      }
+  - key: /config/2/3
+    value: |
+      {
+        "ip":"127.0.0.1",
+        "port_in":6671,
+        "log":
+        {
+          "level": 1
+        }
+      }

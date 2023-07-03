@@ -14,11 +14,10 @@ const (
 	ChaMainLoopFun         = 10
 	TimePrecision    int64 = 1000
 	TimeMinuteSecond int64 = 60
-	// FileConfig = "server.yaml"
 )
 
 var (
-	FileConfig string
+	FileConfig string = "server.yaml"
 )
 
 type ConfServer struct {
@@ -26,13 +25,13 @@ type ConfServer struct {
 	ConnectionType int                      `yaml:"connection_type" json:"connection_type"`
 	Port           int                      `yaml:"port" json:"port"`
 	PortIn         int                      `yaml:"port_in" json:"port_in"`
-	Log            *ConfLog                 `yaml:"log" json:"log"`
+	Log            *plog.ConfLog            `yaml:"log" json:"log"`
 	RemoteServers  []*pnet.ConfRemoteServer `yaml:"remote_server" json:"remote_server"`
 }
 
 func NewConfServer() *ConfServer {
 	t := &ConfServer{
-		Log: NewConfLog(),
+		Log: plog.NewConfLog(),
 	}
 	return t
 }
@@ -59,7 +58,7 @@ func (t *ConfServer) GetID() int64                               { return t.ID }
 func (t *ConfServer) GetConnectionType() int                     { return t.ConnectionType }
 func (t *ConfServer) GetPort() int                               { return t.Port }
 func (t *ConfServer) GetPortIn() int                             { return t.PortIn }
-func (t *ConfServer) GetLog() *ConfLog                           { return t.Log }
+func (t *ConfServer) GetLog() *plog.ConfLog                      { return t.Log }
 func (t *ConfServer) GetRemoteServers() []*pnet.ConfRemoteServer { return t.RemoteServers }
 
 func (t *ConfServer) parseArgs() {

@@ -6,6 +6,8 @@ use (
 	./example/playground
 	./example/proto
 	./example/server
+	./example/server_etcd
+	./example/server_etcd_init
 	./petcd
 	./plog
 	./pnet

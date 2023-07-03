@@ -15,7 +15,7 @@ func main() {
 
 	// testETCD()
 	// testETCDLease()
-	// testPETCD()
+	testPETCD()
 	// testPETCDWatch()
 	// testPETCDFlushDB()
 	// testPETCDCompact()
@@ -107,7 +107,7 @@ func testETCDLease() {
 
 func testPETCD() {
 	t := petcd.NewConfigEtcd()
-	t.Endpoints = append(t.Endpoints, "http://127.0.0.1:2379")
+	t.Endpoints = append(t.Endpoints, "http://localhost:60001", "http://localhost:60002", "http://localhost:60003")
 	t.DialTimeout = 1
 	t.OperationTimeout = 1
 	t.LeaseTimeoutBeforeKeepAlive = 30
@@ -123,17 +123,19 @@ func testPETCD() {
 	// time.Sleep(time.Second * 10)
 	// plog.InfoLn("test done")
 
-	// petcd.PutAlive("/server/127.0.0.1:1", "alive")
-	// petcd.PutAlive("/server/127.0.0.1:2", "alive")
-	// petcd.PutAlive("/server/127.0.0.1:3", "alive")
+	petcd.PutAlive("/server/127.0.0.1:1", "alive")
+	petcd.PutAlive("/server/127.0.0.1:2", "alive")
+	petcd.PutAlive("/server/127.0.0.1:3", "alive")
 
-	// mapServer := make(map[string]string)
-	// petcd.GetPrefix("/server/", mapServer)
-	// for k, v := range mapServer {
-	// 	plog.InfoF("%v[%v]->%v\n", k, petcd.TrimPrefix(k, "/server/"), v)
-	// }
+	petcd.Put("/server/127.0.0.1:1", "abcdefg12345")
 
-	// time.Sleep(time.Second * 10)
+	mapServer := make(map[string]string)
+	petcd.GetPrefix("/server/", mapServer)
+	for k, v := range mapServer {
+		plog.InfoF("%v[%v]->%v\n", k, petcd.TrimPrefix(k, "/server/"), v)
+	}
+
+	time.Sleep(time.Second * 10)
 }
 
 func testPETCDWatch() {

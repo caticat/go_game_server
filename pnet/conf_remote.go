@@ -6,7 +6,7 @@ type ConfRemoteServer struct {
 	ServerID       int    `yaml:"server_id" json:"server_id"`
 	ConnectionType int    `yaml:"connection_type" json:"connection_type"`
 	IP             string `yaml:"ip" json:"ip"`
-	Port           int    `yaml:"port" json:"port"`
+	Port           int    `yaml:"port" json:"port_in"`
 }
 
 func NewConfRemoteServer() *ConfRemoteServer       { return &ConfRemoteServer{} }
