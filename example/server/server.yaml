@@ -1,7 +1,6 @@
 # go run .
 
-# TODO: 最终这个配置文件应该只有自己的ID编号和ETCD的地址
-#       其他配置都放在ETCD中
+# 本地配置文件版本
 
 id: 1
 connection_type: 2

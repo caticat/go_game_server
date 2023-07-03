@@ -4,12 +4,9 @@ import (
 	"sync"
 
 	"github.com/caticat/go_game_server/example/proto"
-	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
-
-// TODO: 功能待制作
 
 type SocketManager struct {
 	m_mapConnection       map[string]bool                          // 所有连接,是否有连接 <"ip:port", true>
@@ -35,8 +32,8 @@ func NewSocketManager() *SocketManager {
 		m_mapSocket:           make(map[int64]*pnet.PSocket),
 		m_mapSocketServer:     make(map[int64]*pnet.PSocket),
 		m_mapConnectionSocket: make(map[proto.ConnectionType][]*pnet.PSocket),
-		m_chaRecv:             make(chan *pnet.PRecvData, conf.ChaRecvLen),
-		m_chaMainLoopFun:      make(chan func(), conf.ChaMainLoopFun),
+		m_chaRecv:             make(chan *pnet.PRecvData, ChaRecvLen),
+		m_chaMainLoopFun:      make(chan func(), ChaMainLoopFun),
 	}
 	return t
 }

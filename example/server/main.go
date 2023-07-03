@@ -5,7 +5,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/caticat/go_game_server/example/server/conf"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
 )
@@ -13,7 +12,7 @@ import (
 var (
 	g_socketManager  = NewSocketManager()
 	g_messageManager = NewMessageManager()
-	g_conf           = conf.NewConfServer()
+	g_conf           = NewConfServer()
 	g_chaSig         = make(chan os.Signal, 1)
 )
 
@@ -74,4 +73,4 @@ func onExit(s os.Signal) {
 
 func getSocketManager() *SocketManager   { return g_socketManager }
 func getMessageManager() *MessageManager { return g_messageManager }
-func getConf() *conf.ConfServer          { return g_conf }
+func getConf() *ConfServer               { return g_conf }

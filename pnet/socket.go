@@ -61,14 +61,6 @@ func (t *PSocket) runSend() {
 	for data := range t.getChaSend() {
 		t.send(data)
 	}
-
-	// for {
-	// 	select {
-	// 	case data := <-t.getChaSend():
-	// 		t.send(data)
-	// 		// TODO: 是否需要退出循环
-	// 	}
-	// }
 }
 
 func (t *PSocket) runRecv() {
