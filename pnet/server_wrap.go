@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/caticat/go_game_server/plog"
-	"github.com/caticat/go_game_server/pnet/conf"
 )
 
 func listenAndServe(port int, isInnerConnection bool) {
@@ -35,7 +34,7 @@ func listenAndServe(port int, isInnerConnection bool) {
 	}
 }
 
-func runConnect(serverConfigs []*conf.ConfServerRemote) {
+func runConnect(serverConfigs []*ConfServerRemote) {
 	socketMgr := GetSocketMgr()
 	if socketMgr == nil {
 		plog.PanicLn("socketMgr == nil")
@@ -53,7 +52,7 @@ func runConnect(serverConfigs []*conf.ConfServerRemote) {
 	}
 }
 
-func connect(cfg *conf.ConfServerRemote) {
+func connect(cfg *ConfServerRemote) {
 	socketMgr := GetSocketMgr()
 	if socketMgr == nil {
 		plog.PanicLn("socketMgr == nil")

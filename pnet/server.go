@@ -2,7 +2,6 @@ package pnet
 
 import (
 	"github.com/caticat/go_game_server/plog"
-	"github.com/caticat/go_game_server/pnet/conf"
 )
 
 func Init(socketMgr PSocketManager) { setSocketMgr(socketMgr) }
@@ -25,7 +24,7 @@ func ListenAndServe(port int, portIn int) {
 	}
 }
 
-func Connect(serverConfigs []*conf.ConfServerRemote) {
+func Connect(serverConfigs []*ConfServerRemote) {
 	socketMgr := GetSocketMgr()
 	if socketMgr == nil {
 		plog.PanicLn("socketMgr == nil")

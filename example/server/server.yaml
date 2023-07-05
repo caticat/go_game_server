@@ -1,27 +1,27 @@
 # go run .
 
 # 本地配置文件版本
+server:
+  id: 1
+  connection_type: 2
 
-id: 1
-connection_type: 2
+  # 对外端口
+  port: 6666
+  # 对内端口
+  # port_in: 6667
 
-# 对外端口
-port: 6666
-# 对内端口
-# port_in: 6667
+  # 主动连接服务器
+  # remote_server:
+  #   - server_id: 2
+  #     connection_type: 3
+  #     ip: 127.0.0.1
+  #     port: 6669
+  #   - server_id: 3
+  #     connection_type: 2
+  #     ip: 127.0.0.1
+  #     port: 6671
 
 # 日志
 log:
   level: 1
   # file: ./log/server.log
-
-# 主动连接服务器
-# remote_server:
-#   - server_id: 2
-#     connection_type: 3
-#     ip: 127.0.0.1
-#     port: 6669
-#   - server_id: 3
-#     connection_type: 2
-#     ip: 127.0.0.1
-#     port: 6671

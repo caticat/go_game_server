@@ -8,7 +8,6 @@ import (
 	"github.com/caticat/go_game_server/petcd"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/caticat/go_game_server/pnet"
-	"github.com/caticat/go_game_server/pnet/conf"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,7 +23,7 @@ var (
 )
 
 type ConfServerEtcd struct {
-	Server *conf.ConfServer  `yaml:"server" json:"server"`
+	Server *pnet.ConfServer  `yaml:"server" json:"server"`
 	Etcd   *petcd.ConfigEtcd `yaml:"etcd"`
 	Status *ConfServerStatus
 }
@@ -35,7 +34,7 @@ type ConfServerStatus struct {
 
 func NewConfServerEtcd() *ConfServerEtcd {
 	t := &ConfServerEtcd{
-		Server: conf.NewConfServer(),
+		Server: pnet.NewConfServer(),
 		Etcd:   petcd.NewConfigEtcd(),
 		Status: NewConfServerStatus(),
 	}
@@ -82,12 +81,12 @@ func (t *ConfServerEtcd) Init() {
 	t.initConfFromEtcd()
 }
 
-func (t *ConfServerEtcd) GetServer() *conf.ConfServer { return t.Server }
+func (t *ConfServerEtcd) GetServer() *pnet.ConfServer { return t.Server }
 func (t *ConfServerEtcd) GetID() int64                { return t.GetServer().GetID() }
 func (t *ConfServerEtcd) GetConnectionType() int      { return t.GetServer().GetConnectionType() }
 func (t *ConfServerEtcd) GetPort() int                { return t.GetServer().GetPort() }
 func (t *ConfServerEtcd) GetPortIn() int              { return t.GetServer().GetPortIn() }
-func (t *ConfServerEtcd) GetRemoteServers() []*conf.ConfServerRemote {
+func (t *ConfServerEtcd) GetRemoteServers() []*pnet.ConfServerRemote {
 	return t.GetServer().GetRemoteServers()
 }
 func (t *ConfServerEtcd) GetLog() *plog.ConfLog        { return t.GetServer().GetLog() }

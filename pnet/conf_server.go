@@ -1,4 +1,4 @@
-package conf
+package pnet
 
 import "github.com/caticat/go_game_server/plog"
 

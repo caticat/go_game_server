@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/caticat/go_game_server/plog"
-	"github.com/caticat/go_game_server/pnet/conf"
+	"github.com/caticat/go_game_server/pnet"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,17 +21,14 @@ var (
 )
 
 type ConfServer struct {
-	ID             int64                    `yaml:"id" json:"id"`
-	ConnectionType int                      `yaml:"connection_type" json:"connection_type"`
-	Port           int                      `yaml:"port" json:"port"`
-	PortIn         int                      `yaml:"port_in" json:"port_in"`
-	Log            *plog.ConfLog            `yaml:"log" json:"log"`
-	RemoteServers  []*conf.ConfServerRemote `yaml:"remote_server" json:"remote_server"`
+	Server *pnet.ConfServer `yaml:"server" json:"server"`
+	Log    *plog.ConfLog    `yaml:"log" json:"log"`
 }
 
 func NewConfServer() *ConfServer {
 	t := &ConfServer{
-		Log: plog.NewConfLog(),
+		Server: pnet.NewConfServer(),
+		Log:    plog.NewConfLog(),
 	}
 	return t
 }
@@ -54,12 +51,12 @@ func (t *ConfServer) Init() {
 	}
 }
 
-func (t *ConfServer) GetID() int64                               { return t.ID }
-func (t *ConfServer) GetConnectionType() int                     { return t.ConnectionType }
-func (t *ConfServer) GetPort() int                               { return t.Port }
-func (t *ConfServer) GetPortIn() int                             { return t.PortIn }
+func (t *ConfServer) GetID() int64                               { return t.Server.ID }
+func (t *ConfServer) GetConnectionType() int                     { return t.Server.ConnectionType }
+func (t *ConfServer) GetPort() int                               { return t.Server.Port }
+func (t *ConfServer) GetPortIn() int                             { return t.Server.PortIn }
+func (t *ConfServer) GetRemoteServers() []*pnet.ConfServerRemote { return t.Server.RemoteServers }
 func (t *ConfServer) GetLog() *plog.ConfLog                      { return t.Log }
-func (t *ConfServer) GetRemoteServers() []*conf.ConfServerRemote { return t.RemoteServers }
 
 func (t *ConfServer) parseArgs() {
 	flag.StringVar(&FileConfig, "c", "server.yaml", "-c=server.yaml")

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/caticat/go_game_server/pnet/conf"
+	"github.com/caticat/go_game_server/pnet"
 )
 
 // 拼接Key
@@ -19,7 +19,7 @@ func FormatKey(args ...any) string {
 }
 
 // 获取服务器配置
-func GetServerConfig(c *conf.ConfServer) error {
+func GetServerConfig(c *pnet.ConfServer) error {
 	if c == nil {
 		return ErrorNilConfig
 	}
@@ -52,7 +52,7 @@ func GetServerConfig(c *conf.ConfServer) error {
 }
 
 // 注册服务
-func RegistService(c *conf.ConfServer, value string) error {
+func RegistService(c *pnet.ConfServer, value string) error {
 	if c == nil {
 		return ErrorNilConfig
 	}
