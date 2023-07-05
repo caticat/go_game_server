@@ -1,22 +1,22 @@
 package petcd
 
+type EtcdKV struct {
+	Key   string `yaml:"key" json:"key"`
+	Value string `yaml:"value" json:"value"`
+}
+
+func NewEtcdKV(key, value string) *EtcdKV {
+	return &EtcdKV{key, value}
+}
+
 type ConfigEtcdInit struct {
 	*ConfigEtcd `yaml:"etcd" json:"etcd"` // 连接配置
 	FlushDB     bool                      `yaml:"flush_db" json:"flush_db"`             // 是否清档
 	EtcdKVList  []*EtcdKV                 `yaml:"list_key_value" json:"list_key_value"` // 初始化键值对
 }
 
-type EtcdKV struct {
-	Key   string `yaml:"key" json:"key"`
-	Value string `yaml:"value" json:"value"`
-}
-
 func NewConfigEtcdInit() *ConfigEtcdInit {
 	return &ConfigEtcdInit{ConfigEtcd: NewConfigEtcd()}
-}
-
-func NewEtcdKV(key, value string) *EtcdKV {
-	return &EtcdKV{key, value}
 }
 
 // 跑初始化配置

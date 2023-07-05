@@ -5,8 +5,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type messageHandler_t func(*PRecvData) bool
-
 type PMessageManager struct {
 	m_mapMsgIDHandler map[int32]messageHandler_t
 }

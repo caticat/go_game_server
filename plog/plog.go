@@ -9,18 +9,6 @@ import (
 	"log"
 )
 
-type ELogLevel int
-
-const (
-	ELogLevel_None ELogLevel = iota
-	ELogLevel_Debug
-	ELogLevel_Info
-	ELogLevel_Warn
-	ELogLevel_Error
-	ELogLevel_Fatal
-	ELogLevel_Panic
-)
-
 func Init(l ELogLevel, logFile string) {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
 	setLogLevel(l)

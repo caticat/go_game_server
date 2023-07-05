@@ -1,10 +1,8 @@
 package pnet
 
 import (
-	"fmt"
-	"net"
-
 	"github.com/caticat/go_game_server/plog"
+	"github.com/caticat/go_game_server/pnet/conf"
 )
 
 func Init(socketMgr PSocketManager) { setSocketMgr(socketMgr) }
@@ -27,33 +25,7 @@ func ListenAndServe(port int, portIn int) {
 	}
 }
 
-func listenAndServe(port int, isInnerConnection bool) {
-	socketMgr := GetSocketMgr()
-	if socketMgr == nil {
-		plog.PanicLn("socketMgr == nil")
-	}
-	l, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
-	if err != nil {
-		plog.PanicLn(err)
-	}
-	defer l.Close()
-
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			plog.ErrorLn(err)
-			continue
-		}
-
-		s := NewPSocket(conn, socketMgr.GetChaRecv())
-		if isInnerConnection {
-			s.SetIsInnerConnection(true)
-		}
-		socketMgr.OnConnect(s)
-	}
-}
-
-func Connect(serverConfigs []*ConfRemoteServer) {
+func Connect(serverConfigs []*conf.ConfServerRemote) {
 	socketMgr := GetSocketMgr()
 	if socketMgr == nil {
 		plog.PanicLn("socketMgr == nil")

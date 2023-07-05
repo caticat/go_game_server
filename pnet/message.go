@@ -16,10 +16,6 @@ type PMessage struct {
 	m_sessionID int64 // 会话唯一ID
 }
 
-func (t *PMessage) GetMsgID() int32              { return t.m_msgID }
-func (t *PMessage) GetSessionID() int64          { return t.m_sessionID }
-func (t *PMessage) setSessionID(sessionID int64) { t.m_sessionID = sessionID }
-
 func NewPMessage(msgID int32, msg proto.Message) *PMessage {
 	t := &PMessage{
 		m_msgID: msgID,
@@ -32,6 +28,10 @@ func NewPMessage(msgID int32, msg proto.Message) *PMessage {
 	}
 	return t
 }
+
+func (t *PMessage) GetMsgID() int32              { return t.m_msgID }
+func (t *PMessage) GetSessionID() int64          { return t.m_sessionID }
+func (t *PMessage) setSessionID(sessionID int64) { t.m_sessionID = sessionID }
 
 func (t PMessage) NewByHead(bufferHead []byte, sessionID int64) (*PMessage, int32) {
 	buffer := bytes.NewReader(bufferHead)

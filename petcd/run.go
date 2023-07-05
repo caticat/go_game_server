@@ -20,6 +20,7 @@ func runWatch(cha clientv3.WatchChan, prefix string, fun funWatchCallback_t) {
 
 	for resp := range cha {
 		for _, e := range resp.Events {
+
 			fun(e.Type, prefix, e.Kv)
 		}
 	}

@@ -10,8 +10,6 @@ import (
 	"github.com/caticat/go_game_server/plog"
 )
 
-const PSocket_ChanLen = 10 // 收发消息阻塞长度
-
 type PSocket struct {
 	m_conn              net.Conn
 	m_chaSend           chan *PMessage
@@ -19,28 +17,6 @@ type PSocket struct {
 	m_sessionID         int64 // sessionID/serverID共用字段,同时只能存在一个
 	m_connType          int
 	m_isInnerConnection bool
-}
-
-func (t *PSocket) getConn() net.Conn                     { return t.m_conn }
-func (t *PSocket) setConn(c net.Conn)                    { t.m_conn = c }
-func (t *PSocket) getChaSend() chan *PMessage            { return t.m_chaSend }
-func (t *PSocket) getChaRecv() chan *PRecvData           { return t.m_chaRecv }
-func (t *PSocket) GetSessionID() int64                   { return t.m_sessionID }
-func (t *PSocket) SetSessionID(sessionID int64)          { t.m_sessionID = sessionID }
-func (t *PSocket) GetServerID() int64                    { return t.m_sessionID }
-func (t *PSocket) SetServerID(serverID int64)            { t.m_sessionID = serverID }
-func (t *PSocket) GetConnectionType() int                { return t.m_connType }
-func (t *PSocket) SetConnectionType(connType int)        { t.m_connType = connType }
-func (t *PSocket) GetIsInnerConnection() bool            { return t.m_isInnerConnection }
-func (t *PSocket) SetIsInnerConnection(isInnerConn bool) { t.m_isInnerConnection = isInnerConn }
-func (t *PSocket) GetHost() string {
-	if c := t.m_conn; c != nil {
-		return c.RemoteAddr().String()
-	} else {
-		debug.PrintStack()
-		plog.ErrorLn("t.m_conn == nil,sessionID:", t.GetSessionID(), ",connType:", t.GetConnectionType())
-		return ""
-	}
 }
 
 func NewPSocket(c net.Conn, chaRecv chan *PRecvData) *PSocket {
@@ -65,6 +41,66 @@ func (t *PSocket) Send(m *PMessage) {
 	}
 	t.getChaSend() <- m
 }
+
+func (t *PSocket) Close() {
+	c := t.getConn()
+	if c == nil {
+		return
+	}
+
+	if sm := GetSocketMgr(); sm != nil {
+		debug.PrintStack()
+		sm.OnDisconnect(t)
+	}
+
+	c.Close()
+	t.setConn(nil)
+}
+
+func (t *PSocket) String() string {
+	addr := "?.?.?.?:?"
+	if c := t.getConn(); c != nil {
+		addr = c.RemoteAddr().String()
+	}
+
+	strID := "SessionID"
+	if t.GetIsInnerConnection() {
+		strID = "ServerID"
+	}
+
+	return fmt.Sprintf("Host:[%q],InInner:%v,%v:%v,ConnectionType:%v",
+		addr,
+		t.GetIsInnerConnection(),
+		strID,
+		t.GetSessionID(),
+		t.GetConnectionType())
+}
+
+// =============================================================================
+
+func (t *PSocket) getConn() net.Conn                     { return t.m_conn }
+func (t *PSocket) setConn(c net.Conn)                    { t.m_conn = c }
+func (t *PSocket) getChaSend() chan *PMessage            { return t.m_chaSend }
+func (t *PSocket) getChaRecv() chan *PRecvData           { return t.m_chaRecv }
+func (t *PSocket) GetSessionID() int64                   { return t.m_sessionID }
+func (t *PSocket) SetSessionID(sessionID int64)          { t.m_sessionID = sessionID }
+func (t *PSocket) GetServerID() int64                    { return t.m_sessionID }
+func (t *PSocket) SetServerID(serverID int64)            { t.m_sessionID = serverID }
+func (t *PSocket) GetConnectionType() int                { return t.m_connType }
+func (t *PSocket) SetConnectionType(connType int)        { t.m_connType = connType }
+func (t *PSocket) GetIsInnerConnection() bool            { return t.m_isInnerConnection }
+func (t *PSocket) SetIsInnerConnection(isInnerConn bool) { t.m_isInnerConnection = isInnerConn }
+func (t *PSocket) GetHost() string {
+	if c := t.m_conn; c != nil {
+		return c.RemoteAddr().String()
+	} else {
+		debug.PrintStack()
+		plog.ErrorLn("t.m_conn == nil,sessionID:", t.GetSessionID(), ",connType:", t.GetConnectionType())
+		return ""
+	}
+}
+
+// =============================================================================
 
 func (t *PSocket) runSend() {
 	for data := range t.getChaSend() {
@@ -122,36 +158,4 @@ func (t *PSocket) send(data *PMessage) {
 		}
 		lenDoneSend += lenSend
 	}
-}
-
-func (t *PSocket) Close() {
-	c := t.getConn()
-	if c == nil {
-		return
-	}
-
-	if sm := GetSocketMgr(); sm != nil {
-		debug.PrintStack()
-		sm.OnDisconnect(t)
-	}
-
-	c.Close()
-	t.setConn(nil)
-}
-
-func (t *PSocket) String() string {
-	addr := "?.?.?.?:?"
-	if c := t.getConn(); c != nil {
-		addr = c.RemoteAddr().String()
-	}
-	strID := "SessionID"
-	if t.GetIsInnerConnection() {
-		strID = "ServerID"
-	}
-	return fmt.Sprintf("Host:[%q],%v:%v,InInner:%v,ConnectionType:%v",
-		addr,
-		strID,
-		t.GetSessionID(),
-		t.GetIsInnerConnection(),
-		t.GetConnectionType())
 }

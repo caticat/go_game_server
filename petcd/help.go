@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/caticat/go_game_server/pnet"
+	"github.com/caticat/go_game_server/pnet/conf"
 )
 
 // 拼接Key
@@ -18,21 +18,8 @@ func FormatKey(args ...any) string {
 	return path.Join(sliKey...)
 }
 
-// type key_t interface {
-// 	int | int64 | string
-// }
-
-// func FormatKeySameType[T key_t](args ...T) string {
-// 	sliKey := make([]string, 0, len(args))
-// 	for _, k := range args {
-// 		sliKey = append(sliKey, fmt.Sprint(k))
-// 	}
-
-// 	return path.Join(sliKey...)
-// }
-
 // 获取服务器配置
-func GetServerConfig(c *pnet.ConfServer) error {
+func GetServerConfig(c *conf.ConfServer) error {
 	if c == nil {
 		return ErrorNilConfig
 	}
@@ -65,7 +52,7 @@ func GetServerConfig(c *pnet.ConfServer) error {
 }
 
 // 注册服务
-func RegistService(c *pnet.ConfServer, value string) error {
+func RegistService(c *conf.ConfServer, value string) error {
 	if c == nil {
 		return ErrorNilConfig
 	}
@@ -74,3 +61,16 @@ func RegistService(c *pnet.ConfServer, value string) error {
 
 	return PutAlive(k, value)
 }
+
+// type key_t interface {
+// 	int | int64 | string
+// }
+
+// func FormatKeySameType[T key_t](args ...T) string {
+// 	sliKey := make([]string, 0, len(args))
+// 	for _, k := range args {
+// 		sliKey = append(sliKey, fmt.Sprint(k))
+// 	}
+
+// 	return path.Join(sliKey...)
+// }

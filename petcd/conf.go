@@ -3,11 +3,8 @@ package petcd
 import (
 	"time"
 
-	"github.com/coreos/etcd/mvcc/mvccpb"
 	"go.etcd.io/etcd/clientv3"
 )
-
-type funWatchCallback_t func(eventType mvccpb.Event_EventType, prefix string, kv *mvccpb.KeyValue)
 
 type ConfigEtcd struct {
 	Endpoints                   []string `yaml:"endpoints"`
