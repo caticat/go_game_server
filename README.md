@@ -23,6 +23,17 @@
 	- [x] 删除数据
 	- [x] 监听数据
 	- [x] etcd配置文件初始化
+	- [ ] GUI修改数据支持
+		- [x] go-app的方式实现失败,应该是etcd的引用库和gui的引用库版本冲突,没找到解决方法`https://github.com/maxence-charriere/go-app`
+	- [ ] GUI
+		- [ ] 查询
+		- [x] 添加
+		- [x] 删除
+			- [x] 单点删除
+			- [ ] 子节点递归删除
+		- [x] 修改
+		- [ ] 脱离配置文件
+		- [x] ~~多ETCD连接~~,这里就不支持了,开多个进程好了
 - [x] 配置文件支持
 	- 没有封装,使用的时候自己写
 - [x] 命令行参数
@@ -36,4 +47,17 @@
 
 ## 扩展安装
 
-- `go get go.etcd.io/etcd/client/v3`
+- petcd
+	- `go get go.etcd.io/etcd/client/v3`
+- petcd_gui
+	- `go get -u fyne.io/fyne/v2`
+	- 已废弃
+		- `go get -u github.com/maxence-charriere/go-app/v9/pkg/app`
+
+## 常用命令
+
+- 整理`go.work`格式
+	- `go work edit -fmt`
+- 替换库引用
+	- `go mod edit -replace github.com/coreos/bbolt@v1.3.4=go.etcd.io/bbolt@v1.3.4`
+	- `go mod edit -replace google.golang.org/grpc=google.golang.org/grpc@v1.26.0`

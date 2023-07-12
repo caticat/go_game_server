@@ -7,10 +7,10 @@ import (
 )
 
 type ConfigEtcd struct {
-	Endpoints                   []string `yaml:"endpoints"`
-	DialTimeout                 int64    `yaml:"dial-timeout"`                    // 连接超时时间 秒
-	OperationTimeout            int64    `yaml:"operation-timeout"`               // 操作超时时间 秒
-	LeaseTimeoutBeforeKeepAlive int64    `yaml:"lease-timeout-before-keep-alive"` // 租约续期前的过期时间(连接断开后多长时间ETCD数据会消失)
+	Endpoints                   []string `yaml:"endpoints" json:"endpoints"`
+	DialTimeout                 int64    `yaml:"dial-timeout" json:"dial-timeout"`                                       // 连接超时时间 秒
+	OperationTimeout            int64    `yaml:"operation-timeout" json:"operation-timeout"`                             // 操作超时时间 秒
+	LeaseTimeoutBeforeKeepAlive int64    `yaml:"lease-timeout-before-keep-alive" json:"lease-timeout-before-keep-alive"` // 租约续期前的过期时间(连接断开后多长时间ETCD数据会消失)
 }
 
 func NewConfigEtcd() *ConfigEtcd {

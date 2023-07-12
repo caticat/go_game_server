@@ -9,6 +9,8 @@ use (
 	./example/server_etcd
 	./example/server_etcd_init
 	./petcd
+	./petcd_gui
+	./phelp
 	./plog
 	./pnet
 	./ptime

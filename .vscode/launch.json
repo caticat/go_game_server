@@ -47,5 +47,12 @@
 			"mode": "auto",
 			"program": "example/etcd_init"
 		},
+		{
+			"name": "Launch PEtcdGui",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "petcd_gui"
+		},
 	]
 }

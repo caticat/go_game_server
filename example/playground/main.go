@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/caticat/go_game_server/petcd"
+	"github.com/caticat/go_game_server/petcd/pdata"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"go.etcd.io/etcd/clientv3"
@@ -15,10 +16,11 @@ func main() {
 
 	// testETCD()
 	// testETCDLease()
-	testPETCD()
+	// testPETCD()
 	// testPETCDWatch()
 	// testPETCDFlushDB()
 	// testPETCDCompact()
+	testPETCDPrefix()
 }
 
 func testETCD() {
@@ -224,4 +226,23 @@ func testPETCDCompact() {
 	t.EtcdKVList = append(t.EtcdKVList, petcd.NewEtcdKV("/server/127.0.0.1:60003", "alive"))
 
 	petcd.ProcessEtcdInit(t)
+}
+
+func testPETCDPrefix() {
+	t := petcd.NewConfigEtcd()
+	t.Endpoints = []string{"http://localhost:60001", "http://localhost:60002", "http://localhost:60003"}
+	t.DialTimeout = 1
+	t.OperationTimeout = 1
+	t.LeaseTimeoutBeforeKeepAlive = 10
+	petcd.Init(t)
+	defer petcd.Close()
+
+	plog.InfoLn("")
+	mapResult := make(map[string]string)
+	petcd.GetPrefix(pdata.PDATA_PREFIX, mapResult)
+
+	root := pdata.NewPEtcdRoot()
+	root.SetAll(mapResult)
+
+	plog.DebugLn(mapResult)
 }

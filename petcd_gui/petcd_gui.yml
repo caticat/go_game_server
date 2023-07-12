@@ -1,0 +1,9 @@
+# etcd连接配置信息
+etcd:
+  endpoints:
+    - localhost:60001
+    - localhost:60002
+    - localhost:60003
+  dial-timeout: 1
+  operation-timeout: 1
+  lease-timeout-before-keep-alive: 10

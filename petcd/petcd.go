@@ -86,6 +86,15 @@ func PutAlive(key, val string) error {
 	return Put(key, val, clientv3.WithLease(getLeaseID()))
 }
 
+// 设置键值并保持原有的生命周期
+func PutKeepLease(key, val string) error {
+	if _, err := GetString(key); err != nil { // 没有的话就直接创建
+		return Put(key, val)
+	} else {
+		return Put(key, val, clientv3.WithIgnoreLease())
+	}
+}
+
 func Get(key string, mapResult map[string]string, opts ...clientv3.OpOption) error {
 	cli := getClient()
 	if cli == nil {
@@ -103,7 +112,11 @@ func Get(key string, mapResult map[string]string, opts ...clientv3.OpOption) err
 		mapResult[string(p.Key)] = string(p.Value)
 	}
 
-	return nil
+	if len(mapResult) == 0 {
+		return ErrorKeyNotFound
+	} else {
+		return nil
+	}
 }
 
 func GetPrefix(key string, mapResult map[string]string) error {
