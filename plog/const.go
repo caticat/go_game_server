@@ -17,3 +17,11 @@ const (
 	c_logDirMod  = 0766
 	c_logFileMod = 0666
 )
+
+type SLogLevel string
+
+const (
+	SLogLevel_Debug SLogLevel = "debug"
+	SLogLevel_Info  SLogLevel = "info"
+	SLogLevel_Warn  SLogLevel = "warn"
+)

@@ -1,6 +1,8 @@
 package plog
 
-import "os"
+import (
+	"os"
+)
 
 var (
 	g_mapLog = map[ELogLevel]*struct {
@@ -30,7 +32,7 @@ var (
 )
 
 func getLogLevel() ELogLevel       { return g_logLevel }
-func setLogLevel(l ELogLevel)      { g_logLevel = l }
+func SetLogLevel(l ELogLevel)      { g_logLevel = l }
 func getLogFilePrefix() string     { return g_logFilePrefix }
 func setLogFilePrefix(f string)    { g_logFilePrefix = f }
 func getLogFileScrollTime() int64  { return g_logFileScrollTime }

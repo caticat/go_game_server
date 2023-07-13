@@ -52,7 +52,10 @@
 			"type": "go",
 			"request": "launch",
 			"mode": "auto",
-			"program": "petcd_gui"
+			"program": "petcd_gui",
+			"args": [
+				// "--reset"
+			]
 		},
 	]
 }

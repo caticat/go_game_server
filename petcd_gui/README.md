@@ -19,6 +19,10 @@
 - 开启CGo
 	- `go env -w CGO_ENABLED=1`
 
+### 打包
+
+- `fyne package -os windows -icon assets/myapp.png`
+
 ## go-app
 
 ### 说明
@@ -48,3 +52,8 @@ go build -o ./build/
 	- `./build/${exe}`
 - 调用
 	- `http://localhost:${port}/`
+
+## 测试
+
+- `winpty docker run -it --rm --network pan_network bitnami/etcd:latest etcdctl --endpoints http://pan_etcd_c1:2379,http://pan_etcd_c2:2379,http://pan_etcd_c3:2379 get "" --prefix`
+- `winpty docker run -it --rm --network pan_network bitnami/etcd:latest etcdctl --endpoints http://pan_etcd:2379 get "" --prefix`

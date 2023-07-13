@@ -8,43 +8,52 @@ import (
 )
 
 func Init(cfg *ConfigEtcd) error {
-	var err error = nil
-	getInit().Do(
-		func() {
-			// 初始化连接,配置
-			if cfg == nil {
-				err = ErrorNilConfig
-				return
-			}
-			setConfig(cfg)
-			cli, err := clientv3.New(cfg.ToConfig())
-			if err != nil {
-				return
-			}
-			setClient(cli)
+	var e error = nil
 
-			// 初始化lease
-			ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
-			resp, err := cli.Lease.Grant(ctx, cfg.LeaseTimeoutBeforeKeepAlive)
+	// 初始化连接,配置
+	if cfg == nil {
+		return ErrorNilConfig
+	}
+
+	f := func() {
+		setConfig(cfg)
+		cli, err := clientv3.New(cfg.ToConfig())
+		if err != nil {
+			e = err
+			return
+		}
+		setClient(cli)
+
+		// 初始化lease
+		ctx, cancel := context.WithTimeout(context.Background(), getConfigOperationTimeout())
+		resp, err := cli.Lease.Grant(ctx, cfg.LeaseTimeoutBeforeKeepAlive)
+		cancel()
+		if err != nil {
+			e = err
+			return
+		}
+		leaseID := resp.ID
+		setLeaseID(leaseID)
+
+		// 启动lease的KeepAlive
+		ctx, cancel = context.WithCancel(context.Background())
+		cha, err := cli.KeepAlive(ctx, leaseID)
+		if err != nil {
+			e = err
 			cancel()
-			if err != nil {
-				return
-			}
-			leaseID := resp.ID
-			setLeaseID(leaseID)
+			return
+		}
+		setLeaseCancel(cancel)
+		go run(cha)
+	}
 
-			// 启动lease的KeepAlive
-			ctx, cancel = context.WithCancel(context.Background())
-			cha, err := cli.KeepAlive(ctx, leaseID)
-			if err != nil {
-				cancel()
-				return
-			}
-			setLeaseCancel(cancel)
-			go run(cha)
-		})
+	if cfg.EnableReInit {
+		f()
+	} else {
+		getInit().Do(f)
+	}
 
-	return err
+	return e
 }
 
 func Close() {

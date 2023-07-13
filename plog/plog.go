@@ -6,13 +6,44 @@ package plog
 //	文件日志(按小时拆分)
 
 import (
+	"io"
 	"log"
 )
 
 func Init(l ELogLevel, logFile string) {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
-	setLogLevel(l)
+	SetLogLevel(l)
 	setLogFilePrefix(logFile)
+}
+
+func SetOutput(o io.Writer) {
+	log.SetOutput(o)
+}
+
+func ToLogLevel(s string) ELogLevel {
+	switch SLogLevel(s) {
+	case SLogLevel_Debug:
+		return ELogLevel_Debug
+	case SLogLevel_Info:
+		return ELogLevel_Info
+	case SLogLevel_Warn:
+		return ELogLevel_Warn
+	default:
+		return ELogLevel_Info
+	}
+}
+
+func ToLogLevelName(logLevel ELogLevel) string {
+	switch logLevel {
+	case ELogLevel_Debug:
+		return string(SLogLevel_Debug)
+	case ELogLevel_Info:
+		return string(SLogLevel_Info)
+	case ELogLevel_Warn:
+		return string(SLogLevel_Warn)
+	default:
+		return string(SLogLevel_Info)
+	}
 }
 
 func Debug(v ...any)                 { doLog(ELogLevel_Debug, v...) }
