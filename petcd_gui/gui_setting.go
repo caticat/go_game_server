@@ -41,7 +41,7 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 				getConf().clearPreferences()
 				d := dialog.NewInformation("reset-local-data", "Delete Local Config Done!\n Need Restart Progress Now!", w)
 				d.SetOnClosed(func() {
-					getApp().Quit()
+					close(true)
 				})
 				d.Show()
 			}, w).Show()
@@ -79,7 +79,7 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		}
 	})
 	search.SetSelected(conf.ConnSelect)
-	butEdit := widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
+	butEdit := widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
 		k := search.Selected
 		v, ok := conf.MapConn.Get(k)
 		if !ok {
@@ -92,11 +92,12 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		en := widget.NewMultiLineEntry()
 		en.Bind(bv)
 		en.SetPlaceHolder("json format")
+		en.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
 		en.Validator = func(s string) error {
 			if json.Valid([]byte(s)) {
 				return nil
 			}
-			return ErrorInvalidInput
+			return ErrorInputNeedJsonFormat
 		}
 		di := dialog.NewForm("Edit", "OK", "Cancel",
 			[]*widget.FormItem{widget.NewFormItem(k, en)}, func(b bool) {
@@ -125,21 +126,31 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		di.Resize(w.Canvas().Size())
 		di.Show()
 	})
-	butCreate := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
+	butCreate := widget.NewButtonWithIcon(STR_EMPTY, theme.ContentAddIcon(), func() {
 		bk := binding.NewString()
 		ek := widget.NewEntry()
 		ek.Bind(bk)
+		ek.Validator = func(s string) error {
+			if s == "" {
+				return ErrorConnectionNameEmpty
+			}
+			if _, ok := getConf().MapConn.Get(s); ok {
+				return ErrorDuplicateEtcdConnectionName
+			}
+			return nil
+		}
 
 		bv := binding.NewString()
-		bv.Set("[\n\n]")
+		bv.Set(GUI_SETTING_CREATE_CONN_PLACEHOLDER)
 		en := widget.NewMultiLineEntry()
 		en.Bind(bv)
 		en.SetPlaceHolder("json format")
+		en.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
 		en.Validator = func(s string) error {
 			if json.Valid([]byte(s)) {
 				return nil
 			}
-			return ErrorInvalidInput
+			return ErrorInputNeedJsonFormat
 		}
 		di := dialog.NewForm("Add", "OK", "Cancel",
 			[]*widget.FormItem{
@@ -151,7 +162,7 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 				}
 				k, _ := bk.Get()
 				v, _ := bv.Get()
-				if k == "" || v == "" {
+				if k == STR_EMPTY || v == STR_EMPTY {
 					dialog.NewError(ErrorInputDataEmpty, w).Show()
 					return
 				}
@@ -176,7 +187,7 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		di.Resize(w.Canvas().Size())
 		di.Show()
 	})
-	butDelete := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+	butDelete := widget.NewButtonWithIcon(STR_EMPTY, theme.DeleteIcon(), func() {
 		k := search.Selected
 		_, ok := conf.MapConn.Get(k)
 		if !ok {
@@ -218,7 +229,7 @@ func initGUISettingForm(value int64, confirm func(int64)) *fyne.Container {
 	ent := widget.NewEntryWithData(bindData)
 	ent.Disable()
 	var butEdit, butOK, butCancel *widget.Button
-	butEdit = widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {
+	butEdit = widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
 		s, _ := bindData.Get()
 		value, _ = strconv.ParseInt(s, 10, 64)
 
@@ -227,7 +238,7 @@ func initGUISettingForm(value int64, confirm func(int64)) *fyne.Container {
 		butOK.Show()
 		butCancel.Show()
 	})
-	butOK = widget.NewButtonWithIcon("", theme.ConfirmIcon(), func() {
+	butOK = widget.NewButtonWithIcon(STR_EMPTY, theme.ConfirmIcon(), func() {
 		if s, err := bindData.Get(); err == nil {
 			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
 				if v != value {
@@ -244,7 +255,7 @@ func initGUISettingForm(value int64, confirm func(int64)) *fyne.Container {
 		butOK.Hide()
 		butCancel.Hide()
 	})
-	butCancel = widget.NewButtonWithIcon("", theme.CancelIcon(), func() {
+	butCancel = widget.NewButtonWithIcon(STR_EMPTY, theme.CancelIcon(), func() {
 		bindData.Set(fmt.Sprintf("%v", value))
 		ent.Disable()
 		butEdit.Show()

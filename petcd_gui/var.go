@@ -24,6 +24,7 @@ func getEtcdKey() string            { return g_etcdKey }
 func setEtcdKey(key string)         { g_etcdKey = key }
 func getEtcdValue() binding.String  { return g_etcdValue }
 func getApp() fyne.App              { return g_app }
+func setApp(a fyne.App)             { g_app = a }
 func getFunGUIHomeRefresh() func()  { return g_funGUIHomeRefresh }
 func setFunGUIHomeRefresh(f func()) { g_funGUIHomeRefresh = f }
 func getFunUpdateTitle() func()     { return g_funUpdateTitle }

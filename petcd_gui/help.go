@@ -16,6 +16,6 @@ func updateWindowTitle(w fyne.Window) {
 }
 
 func toJsonIndent[T any](t T) (string, error) {
-	b, e := json.MarshalIndent(t, "", "\t")
+	b, e := json.MarshalIndent(t, STR_EMPTY, "\t")
 	return string(b), e
 }

@@ -98,7 +98,7 @@ func (t *ConfigEtcdGUI) SetBase(c *petcd.ConfigEtcdBase) {
 
 func (t *ConfigEtcdGUI) SetSelect(s string) error {
 	if _, ok := t.MapConn.Get(s); !ok {
-		return ErrorSelectEtcdEndPointNotFound
+		return ErrorSelectEtcdConnectionNotFound
 	}
 
 	if t.ConnSelect != s {
@@ -112,12 +112,12 @@ func (t *ConfigEtcdGUI) SetSelect(s string) error {
 
 func (t *ConfigEtcdGUI) AddConn(n string, c *petcd.ConfigEtcdConn) error {
 	if _, ok := t.MapConn.Get(n); ok {
-		return ErrorDuplicateEtcdEndPointName
+		return ErrorDuplicateEtcdConnectionName
 	}
 
 	t.MapConn.Set(n, c)
 
-	return t.saveEndPoint()
+	return t.saveConnList()
 }
 
 func (t *ConfigEtcdGUI) ModConn(n string, c *petcd.ConfigEtcdConn) error {
@@ -128,7 +128,7 @@ func (t *ConfigEtcdGUI) ModConn(n string, c *petcd.ConfigEtcdConn) error {
 
 	t.MapConn.Set(n, c)
 
-	if err := t.saveEndPoint(); err != nil {
+	if err := t.saveConnList(); err != nil {
 		return err
 	}
 
@@ -145,19 +145,19 @@ func (t *ConfigEtcdGUI) DelConn(n string) error {
 	}
 
 	if t.ConnSelect == n { // 不能删除当前连接
-		return ErrorDeleteSelectingEndPoint
+		return ErrorDeleteSelectingConnection
 	}
 
 	t.MapConn.Del(n)
 
-	if err := t.saveEndPoint(); err != nil {
+	if err := t.saveConnList(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (t *ConfigEtcdGUI) saveEndPoint() error {
+func (t *ConfigEtcdGUI) saveConnList() error {
 	a := getApp()
 	if s, err := toJsonIndent(t.MapConn.GetMap()); err == nil {
 		a.Preferences().SetString(PETCD_CFG_CONN_LIST, s)
@@ -171,7 +171,7 @@ func (t *ConfigEtcdGUI) reconnect() error {
 	// 关闭当前连接
 	setConnected(false)
 	getFunUpdateTitle()()
-	close()
+	close(false)
 	time.Sleep(time.Second)
 
 	// 重新连接

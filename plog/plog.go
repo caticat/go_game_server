@@ -20,6 +20,12 @@ func SetOutput(o io.Writer) {
 	log.SetOutput(o)
 }
 
+func SetShortFile() {
+	flags := log.Flags()
+	flags = flags&(0^log.Llongfile) | log.Lshortfile
+	log.SetFlags(flags)
+}
+
 func ToLogLevel(s string) ELogLevel {
 	switch SLogLevel(s) {
 	case SLogLevel_Debug:

@@ -11,5 +11,9 @@ import (
 )
 
 func initGUIInfo(w fyne.Window, c binding.String) fyne.CanvasObject {
-	return container.NewVBox(widget.NewLabel("Config"), canvas.NewLine(color.Black), widget.NewLabelWithData(c))
+	return container.NewVBox(
+		widget.NewLabel("Configuration"),
+		canvas.NewLine(color.Black),
+		widget.NewLabelWithData(c),
+	)
 }

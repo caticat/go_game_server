@@ -14,34 +14,37 @@ import (
 )
 
 func runGUI(err error) {
+	// 窗口初始化
 	a := getApp()
 	a.Settings().SetTheme(ptheme.NewThemeCN())
 	w := a.NewWindow(WINDOW_TITLE)
 	w.SetMaster()
 
+	// 窗口内容
 	infoData := binding.NewString()
-	l := initGUILog(w)
-	tabs := container.NewAppTabs(
+	guiLog := initGUILog(w)
+	guiTabMain := container.NewAppTabs(
 		container.NewTabItemWithIcon("Home", theme.HomeIcon(), initGUIHome(w)),
 		container.NewTabItemWithIcon("Setting", theme.SettingsIcon(), initGUISetting(w)),
 		container.NewTabItemWithIcon("Info", theme.InfoIcon(), initGUIInfo(w, infoData)),
-		container.NewTabItemWithIcon("Log", theme.DocumentIcon(), l),
+		container.NewTabItemWithIcon("Log", theme.DocumentIcon(), guiLog),
 	)
-	tabs.OnSelected = func(ti *container.TabItem) {
+	guiTabMain.OnSelected = func(ti *container.TabItem) {
 		iconName := ti.Icon.Name()
 		if iconName == theme.InfoIcon().Name() { // 更新Info界面的数据
 			infoData.Set(phelp.ToJsonIndent(getConf()))
 		}
 		if iconName == theme.DocumentIcon().Name() { // 日志界面隐藏逻辑,减少界面刷新
-			l.Show()
+			guiLog.Show()
 		} else {
-			l.Hide()
+			guiLog.Hide()
 		}
 	}
-	tabs.SetTabLocation(container.TabLocationLeading)
+	guiTabMain.SetTabLocation(container.TabLocationLeading)
 
-	w.SetContent(tabs)
-	w.Resize(fyne.NewSize(1000, 700))
+	// 窗口尺寸
+	w.SetContent(guiTabMain)
+	w.Resize(fyne.NewSize(GUI_WINDOW_INIT_SIZE_W, GUI_WINDOW_INIT_SIZE_H))
 
 	// 初始连接错误提示框
 	if err != nil {
@@ -56,5 +59,6 @@ func runGUI(err error) {
 		getFunUpdateTitle()()
 	}
 
+	// 阻塞运行
 	w.ShowAndRun()
 }

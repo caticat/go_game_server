@@ -19,14 +19,28 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	// 数据
 	root := getEtcdData()
 
-	var guiSelSearch *widget.SelectEntry = nil
-	var guiButCollapse *widget.Button = nil
+	// 设置Home刷新
+	var guiSelSearch *widget.SelectEntry = nil // 顶部搜索栏
+	var guiButCollapse *widget.Button = nil    // 折叠目录按钮
+	var guiTreKeys *widget.Tree = nil          // 左下目录
+	setFunGUIHomeRefresh(func() {
+		root.Clear()
+		setEtcdKey(STR_EMPTY)
+		getEtcdValue().Set(STR_EMPTY)
+		initData()
+		guiTreKeys.UnselectAll()
+		guiTreKeys.Refresh()
+		guiSelSearch.SetText(STR_EMPTY)
+		guiSelSearch.SetOptions(root.AllKeys())
+	})
+
 	// 左下目录
-	var guiTreKeys *widget.Tree = nil
 	initGUIHomeKeys(&guiTreKeys, &guiSelSearch, &guiButCollapse)
 
 	// 右下key对应的值
 	guiLabValue := widget.NewLabelWithData(g_etcdValue)
+
+	// 主界面
 	guiHSpMain := container.NewHSplit(guiTreKeys, guiLabValue)
 	guiHSpMain.SetOffset(GUI_HOME_MAIN_OFFSET)
 
@@ -34,16 +48,14 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	guiSelSearch = widget.NewSelectEntry(root.AllKeys())
 	guiSelSearch.SetPlaceHolder(GUI_HOME_SEARCH_PLACEHOLDER)
 	guiSelSearch.OnSubmitted = func(s string) {
-		_, ok := root.GetValue(s)
-		if !ok {
+		if _, ok := root.GetValue(s); !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
 			return
 		}
 		guiTreKeys.Select(s)
 	}
 	guiSelSearch.OnChanged = func(s string) {
-		_, ok := root.GetValue(s)
-		if !ok {
+		if _, ok := root.GetValue(s); !ok {
 			return
 		}
 		guiSelSearch.OnSubmitted(s)
@@ -60,46 +72,56 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	})
 	guiButRefresh := widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), getFunGUIHomeRefresh())
 	guiButEdit := widget.NewButtonWithIcon("Edit", theme.DocumentCreateIcon(), func() {
-		k := getEtcdKey()
-		if k == STR_EMPTY {
+		key := getEtcdKey()
+		if key == STR_EMPTY {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
 			return
 		}
 		v, _ := getEtcdValue().Get()
-		bv := binding.BindString(&v)
-		en := widget.NewMultiLineEntry()
-		en.Bind(bv)
-		di := dialog.NewForm("Edit", "OK", "Cancel",
-			[]*widget.FormItem{widget.NewFormItem(k, en)}, func(b bool) {
+		binV := binding.BindString(&v)
+		guiEntV := widget.NewMultiLineEntry()
+		guiEntV.Bind(binV)
+		guiEntV.SetMinRowsVisible(GUI_HOME_EDIT_ENTRY_LINE_NUM)
+		guiDia := dialog.NewForm("Edit", "OK", "Cancel",
+			[]*widget.FormItem{widget.NewFormItem(key, guiEntV)}, func(b bool) {
 				if !b {
 					return
 				}
-				v, _ := bv.Get()
-				petcd.PutKeepLease(k, v)
+				v, _ := binV.Get()
+				petcd.PutKeepLease(key, v)
 				guiButRefresh.OnTapped() // 刷新界面
-				guiTreKeys.Select(k)     // 重新选择指定条目
+				guiTreKeys.Select(key)   // 重新选择指定条目
 			}, w)
 
-		di.Resize(w.Canvas().Size())
-		di.Show()
+		guiDia.Resize(w.Canvas().Size())
+		guiDia.Show()
 	})
 	guiButAdd := widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
-		bk := binding.NewString()
-		bv := binding.NewString()
-		enk := widget.NewEntry()
-		enk.Bind(bk)
-		env := widget.NewMultiLineEntry()
-		env.Bind(bv)
-		di := dialog.NewForm("New", "OK", "Cancel",
+		k := getEtcdKey()
+		binK := binding.NewString()
+		binK.Set(path.Join(k, pdata.PDATA_PREFIX)) // 初始化输入参数
+		binV := binding.NewString()
+		guiEntKey := widget.NewEntry()
+		guiEntKey.Bind(binK)
+		guiEntKey.Validator = func(s string) error {
+			if _, ok := root.GetValue(s); ok {
+				return ErrorPathAlreadyHasData
+			}
+			return nil
+		}
+		guiEntV := widget.NewMultiLineEntry()
+		guiEntV.Bind(binV)
+		guiEntV.SetMinRowsVisible(GUI_HOME_EDIT_ENTRY_LINE_NUM)
+		guiDia := dialog.NewForm("New", "OK", "Cancel",
 			[]*widget.FormItem{
-				widget.NewFormItem("key", enk),
-				widget.NewFormItem("value", env),
+				widget.NewFormItem("key", guiEntKey),
+				widget.NewFormItem("value", guiEntV),
 			}, func(b bool) {
 				if !b {
 					return
 				}
-				k, _ := bk.Get()
-				v, _ := bv.Get()
+				k, _ := binK.Get()
+				v, _ := binV.Get()
 				if k == STR_EMPTY {
 					dialog.NewError(ErrorEmptyPath, w).Show()
 					return
@@ -113,8 +135,8 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 				guiTreKeys.Select(k)     // 重新选择指定条目
 			}, w)
 
-		di.Resize(w.Canvas().Size())
-		di.Show()
+		guiDia.Resize(w.Canvas().Size())
+		guiDia.Show()
 	})
 	guiButDel := widget.NewButtonWithIcon("Delete", theme.DeleteIcon(), func() {
 		k := getEtcdKey()
@@ -122,8 +144,7 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
 			return
 		}
-		_, ok := root.GetValue(k)
-		if !ok {
+		if _, ok := root.GetValue(k); !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
 			return
 		}
@@ -139,18 +160,6 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 
 	// 总布局
 	guiConAll := container.NewBorder(guiConTitle, nil, nil, nil, container.NewMax(guiHSpMain))
-
-	// 设置Home刷新
-	setFunGUIHomeRefresh(func() {
-		root.Clear()
-		setEtcdKey(STR_EMPTY)
-		getEtcdValue().Set(STR_EMPTY)
-		initData()
-		guiTreKeys.UnselectAll()
-		guiTreKeys.Refresh()
-		guiSelSearch.SetText(STR_EMPTY)
-		guiSelSearch.SetOptions(root.AllKeys())
-	})
 
 	// 设置标题状态函数
 	setFunUpdateTitle(func() {
@@ -188,17 +197,18 @@ func initGUIHomeKeys(pKeys **widget.Tree, pSearch **widget.SelectEntry, pCollaps
 			}
 		},
 		func(branch bool) fyne.CanvasObject {
-			if branch {
-				return widget.NewLabel("Branch template")
-			}
-			return widget.NewLabel("Leaf template")
+			guiIco := widget.NewIcon(theme.RadioButtonIcon())
+			guiLab := widget.NewLabel("")
+			return container.NewHBox(guiIco, guiLab)
 		},
 		func(id widget.TreeNodeID, branch bool, o fyne.CanvasObject) {
-			text := path.Join(pdata.PDATA_PREFIX, path.Base(id))
-			if branch {
-				text += " (branch)"
+			if _, ok := root.GetValue(id); ok {
+				o.(*fyne.Container).Objects[0].(*widget.Icon).SetResource(theme.RadioButtonCheckedIcon())
+			} else {
+				o.(*fyne.Container).Objects[0].(*widget.Icon).SetResource(theme.RadioButtonIcon())
 			}
-			o.(*widget.Label).SetText(text)
+			text := path.Join(pdata.PDATA_PREFIX, path.Base(id))
+			o.(*fyne.Container).Objects[1].(*widget.Label).SetText(text)
 		})
 
 	(*pKeys).OnSelected = func(uid widget.TreeNodeID) {
@@ -208,6 +218,14 @@ func initGUIHomeKeys(pKeys **widget.Tree, pSearch **widget.SelectEntry, pCollaps
 			(*pSearch).SetText(uid)
 		} else {
 			(*pSearch).SetText(STR_EMPTY)
+			value = STR_NIL
+
+			// 没有数据的话,相当于切换子树的展开状态,这里重复点击无效,体验不好,所以注释掉了
+			// if (*pKeys).IsBranchOpen(uid) {
+			// 	(*pKeys).CloseBranch(uid)
+			// } else {
+			// 	(*pKeys).OpenBranch(uid)
+			// }
 		}
 		getEtcdValue().Set(value)
 

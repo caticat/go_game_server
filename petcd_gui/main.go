@@ -7,25 +7,38 @@ import (
 )
 
 func main() {
+	// 初始化日志
 	plog.Init(plog.ELogLevel_Debug, "")
 
-	g_app = app.NewWithID("com.github.caticat.go_game_server.petcd_gui")
-	defer g_app.Quit()
+	// 初始化App
+	setApp(app.NewWithID(APP_ID))
 
+	// 初始化配置
 	conf := getConf()
 	if err := conf.Init(); err != nil {
 		plog.FatalLn(err)
 	}
+
+	// 日志额外设置
 	plog.SetOutput(NewPLogWriter()) // 配置读取后才将日志输出只向GUI界面
+	plog.SetShortFile()             // GUI中采用短文件名记录日志
 
+	// 初始化ETCD连接
 	err := petcd.Init(conf.GetCfgETCD())
-	initData()
+	if err == nil {
+		initData() // 同步ETCD的数据到内存数据结构
+	}
 
+	// 界面运行
 	runGUI(err)
 
-	close()
+	// 关闭
+	close(true)
 }
 
-func close() {
+func close(isExit bool) {
 	petcd.Close()
+	if isExit {
+		getApp().Quit()
+	}
 }
