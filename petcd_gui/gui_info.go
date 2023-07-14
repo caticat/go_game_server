@@ -1,19 +1,30 @@
 package main
 
 import (
-	"image/color"
+	"net/url"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
 func initGUIInfo(w fyne.Window, c binding.String) fyne.CanvasObject {
-	return container.NewVBox(
-		widget.NewLabel("Configuration"),
-		canvas.NewLine(color.Black),
-		widget.NewLabelWithData(c),
+	urlRespitory, _ := url.Parse("https://github.com/caticat/go_game_server/petcd_gui")
+	urlLink := widget.NewHyperlink("github.com/caticat/go_game_server/petcd_gui", urlRespitory)
+
+	return container.NewScroll(
+		container.NewVBox(
+			widget.NewLabel("Information"),
+			widget.NewForm(
+				widget.NewFormItem("author", widget.NewLabel("Pan J")),
+				widget.NewFormItem("repository", urlLink),
+				widget.NewFormItem("version", widget.NewLabel("v0.0.1")),
+			),
+			layout.NewSpacer(),
+			widget.NewLabel("Configuration"),
+			widget.NewLabelWithData(c),
+		),
 	)
 }
