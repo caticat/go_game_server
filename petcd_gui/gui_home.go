@@ -19,10 +19,23 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	// 数据
 	root := getEtcdData()
 
-	// 设置Home刷新
-	var guiSelSearch *widget.SelectEntry = nil // 顶部搜索栏
-	var guiButCollapse *widget.Button = nil    // 折叠目录按钮
-	var guiTreKeys *widget.Tree = nil          // 左下目录
+	// 控件 先声明的原因是要把他们提出来作为其他控件的函数调用参数,否则放在后面顺序不好控制
+	var (
+		guiSelSearch   *widget.SelectEntry = nil // 头部 搜索栏
+		connectStatus  *widget.Icon        = nil // 头部 连接状态
+		guiButCollapse *widget.Button      = nil // 头部 折叠目录
+		guiButRefresh  *widget.Button      = nil // 头部 刷新
+		guiButEdit     *widget.Button      = nil // 头部 编辑
+		guiButAdd      *widget.Button      = nil // 头部 添加
+		guiButDel      *widget.Button      = nil // 头部 删除
+		guiTreKeys     *widget.Tree        = nil // 身体 目录
+		guiLabValue    *widget.Label       = nil // 身体 值显示
+		guiConHead     *fyne.Container     = nil // 布局 头
+		guiConBody     *container.Split    = nil // 布局 身
+		guiConAll      *fyne.Container     = nil // 布局 总
+	)
+
+	// 设置Home刷新 设置函数要放在界面初始化前面
 	setFunGUIHomeRefresh(func() {
 		root.Clear()
 		setEtcdKey(STR_EMPTY)
@@ -34,44 +47,93 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 		guiSelSearch.SetOptions(root.AllKeys())
 	})
 
-	// 左下目录
-	initGUIHomeKeys(&guiTreKeys, &guiSelSearch, &guiButCollapse)
+	// 身体
+	initGUIHomeBody(
+		&guiTreKeys,
+		&guiLabValue,
+		&guiConBody,
+		&guiSelSearch,
+		&guiButCollapse,
+	)
 
-	// 右下key对应的值
-	guiLabValue := widget.NewLabelWithData(g_etcdValue)
+	// 头部
+	initGUIHomeHead(
+		w,
+		&guiSelSearch,
+		&connectStatus,
+		&guiButCollapse,
+		&guiButRefresh,
+		&guiButEdit,
+		&guiButAdd,
+		&guiButDel,
+		&guiConHead,
+		guiTreKeys,
+	)
 
-	// 主界面
-	guiHSpMain := container.NewHSplit(guiTreKeys, guiLabValue)
-	guiHSpMain.SetOffset(GUI_HOME_MAIN_OFFSET)
+	// 设置标题状态函数
+	setFunUpdateTitle(func() {
+		updateWindowTitle(w)
+		if getConnected() {
+			connectStatus.SetResource(theme.ConfirmIcon())
+		} else {
+			connectStatus.SetResource(theme.ErrorIcon())
+		}
+	})
 
-	// 顶部刷新
-	guiSelSearch = widget.NewSelectEntry(root.AllKeys())
-	guiSelSearch.SetPlaceHolder(GUI_HOME_SEARCH_PLACEHOLDER)
-	guiSelSearch.OnSubmitted = func(s string) {
+	// 总布局
+	guiConAll = container.NewBorder(guiConHead, nil, nil, nil, container.NewMax(guiConBody))
+	return guiConAll
+}
+
+func initGUIHomeHead(w fyne.Window,
+	pGuiSelSearch **widget.SelectEntry,
+	pConnectStatus **widget.Icon,
+	pGuiButCollapse **widget.Button,
+	pGuiButRefresh **widget.Button,
+	pGuiButEdit **widget.Button,
+	pGuiButAdd **widget.Button,
+	pGuiButDel **widget.Button,
+	pGuiConHead **fyne.Container,
+	guiTreKeys *widget.Tree) {
+	// 数据
+	root := getEtcdData()
+
+	// 查询
+	*pGuiSelSearch = widget.NewSelectEntry(root.AllKeys())
+	(*pGuiSelSearch).SetPlaceHolder(GUI_HOME_SEARCH_PLACEHOLDER)
+	(*pGuiSelSearch).OnSubmitted = func(s string) {
 		if _, ok := root.GetValue(s); !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
 			return
 		}
 		guiTreKeys.Select(s)
 	}
-	guiSelSearch.OnChanged = func(s string) {
+	(*pGuiSelSearch).OnChanged = func(s string) {
 		if _, ok := root.GetValue(s); !ok {
 			return
 		}
-		guiSelSearch.OnSubmitted(s)
+		(*pGuiSelSearch).OnSubmitted(s)
 	}
-	connectStatus := widget.NewIcon(theme.ConfirmIcon())
-	guiButCollapse = widget.NewButtonWithIcon(STR_EMPTY, theme.ZoomInIcon(), func() {
+
+	// 连接状态
+	*pConnectStatus = widget.NewIcon(theme.ConfirmIcon())
+
+	// 目录折叠
+	*pGuiButCollapse = widget.NewButtonWithIcon(STR_EMPTY, theme.ZoomInIcon(), func() {
 		if guiTreKeys.IsBranchOpen(pdata.PDATA_PREFIX) {
 			guiTreKeys.CloseAllBranches()
-			guiButCollapse.SetIcon(theme.ZoomInIcon())
+			(*pGuiButCollapse).SetIcon(theme.ZoomInIcon())
 		} else {
 			guiTreKeys.OpenAllBranches()
-			guiButCollapse.SetIcon(theme.ZoomOutIcon())
+			(*pGuiButCollapse).SetIcon(theme.ZoomOutIcon())
 		}
 	})
-	guiButRefresh := widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), getFunGUIHomeRefresh())
-	guiButEdit := widget.NewButtonWithIcon("Edit", theme.DocumentCreateIcon(), func() {
+
+	// 数据刷新
+	*pGuiButRefresh = widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), getFunGUIHomeRefresh())
+
+	// 编辑
+	*pGuiButEdit = widget.NewButtonWithIcon("Edit", theme.DocumentCreateIcon(), func() {
 		key := getEtcdKey()
 		if key == STR_EMPTY {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
@@ -89,14 +151,16 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 				}
 				v, _ := binV.Get()
 				petcd.PutKeepLease(key, v)
-				guiButRefresh.OnTapped() // 刷新界面
-				guiTreKeys.Select(key)   // 重新选择指定条目
+				(*pGuiButRefresh).OnTapped() // 刷新界面
+				guiTreKeys.Select(key)       // 重新选择指定条目
 			}, w)
 
 		guiDia.Resize(w.Canvas().Size())
 		guiDia.Show()
 	})
-	guiButAdd := widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
+
+	// 添加
+	*pGuiButAdd = widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
 		k := getEtcdKey()
 		binK := binding.NewString()
 		binK.Set(path.Join(k, pdata.PDATA_PREFIX)) // 初始化输入参数
@@ -131,14 +195,16 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 					return
 				}
 				petcd.PutKeepLease(k, v)
-				guiButRefresh.OnTapped() // 刷新界面
-				guiTreKeys.Select(k)     // 重新选择指定条目
+				(*pGuiButRefresh).OnTapped() // 刷新界面
+				guiTreKeys.Select(k)         // 重新选择指定条目
 			}, w)
 
 		guiDia.Resize(w.Canvas().Size())
 		guiDia.Show()
 	})
-	guiButDel := widget.NewButtonWithIcon("Delete", theme.DeleteIcon(), func() {
+
+	// 删除
+	*pGuiButDel = widget.NewButtonWithIcon("Delete", theme.DeleteIcon(), func() {
 		k := getEtcdKey()
 		if k == STR_EMPTY {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
@@ -153,31 +219,38 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			petcd.Del(k)
-			guiButRefresh.OnTapped() // 刷新界面
+			(*pGuiButRefresh).OnTapped() // 刷新界面
 		}, w).Show()
 	})
-	guiConTitle := container.NewGridWithColumns(2, guiSelSearch, container.NewHBox(connectStatus, guiButCollapse, guiButRefresh, guiButEdit, guiButAdd, guiButDel))
 
-	// 总布局
-	guiConAll := container.NewBorder(guiConTitle, nil, nil, nil, container.NewMax(guiHSpMain))
-
-	// 设置标题状态函数
-	setFunUpdateTitle(func() {
-		updateWindowTitle(w)
-		if getConnected() {
-			connectStatus.SetResource(theme.ConfirmIcon())
-		} else {
-			connectStatus.SetResource(theme.ErrorIcon())
-		}
-	})
-
-	return guiConAll
+	// 容器 头
+	*pGuiConHead = container.NewGridWithColumns(2, *pGuiSelSearch, container.NewHBox(*pConnectStatus, *pGuiButCollapse, *pGuiButRefresh, *pGuiButEdit, *pGuiButAdd, *pGuiButDel))
 }
 
-func initGUIHomeKeys(pKeys **widget.Tree, pSearch **widget.SelectEntry, pCollapse **widget.Button) {
+func initGUIHomeBody(pGuiTreKeys **widget.Tree,
+	pGuiLabValue **widget.Label,
+	pGuiConBody **container.Split,
+	pGuiSelSearch **widget.SelectEntry,
+	pGuiButCollapse **widget.Button) {
+	// 目录
+	initGUIHomeBodyKeys(pGuiTreKeys, pGuiSelSearch, pGuiButCollapse)
+
+	// 数据值
+	*pGuiLabValue = widget.NewLabelWithData(g_etcdValue)
+
+	// 容器 身
+	*pGuiConBody = container.NewHSplit(*pGuiTreKeys, *pGuiLabValue)
+	(*pGuiConBody).SetOffset(GUI_HOME_MAIN_OFFSET)
+}
+
+func initGUIHomeBodyKeys(pGuiTreKeys **widget.Tree,
+	pGuiSelSearch **widget.SelectEntry,
+	pGuiButCollapse **widget.Button) {
+	// 数据
 	root := getEtcdData()
 
-	*pKeys = widget.NewTree(
+	// 目录
+	*pGuiTreKeys = widget.NewTree(
 		func(id widget.TreeNodeID) []widget.TreeNodeID {
 			if id == STR_EMPTY {
 				return []string{root.GetKey()}
@@ -211,13 +284,13 @@ func initGUIHomeKeys(pKeys **widget.Tree, pSearch **widget.SelectEntry, pCollaps
 			o.(*fyne.Container).Objects[1].(*widget.Label).SetText(text)
 		})
 
-	(*pKeys).OnSelected = func(uid widget.TreeNodeID) {
+	(*pGuiTreKeys).OnSelected = func(uid widget.TreeNodeID) {
 		setEtcdKey(uid)
 		value, ok := root.GetValue(uid)
 		if ok {
-			(*pSearch).SetText(uid)
+			(*pGuiSelSearch).SetText(uid)
 		} else {
-			(*pSearch).SetText(STR_EMPTY)
+			(*pGuiSelSearch).SetText(STR_EMPTY)
 			value = STR_NIL
 
 			// 没有数据的话,相当于切换子树的展开状态,这里重复点击无效,体验不好,所以注释掉了
@@ -231,9 +304,9 @@ func initGUIHomeKeys(pKeys **widget.Tree, pSearch **widget.SelectEntry, pCollaps
 
 		// 展开父分支
 		for p := uid; p != pdata.PDATA_PREFIX; {
-			(*pKeys).OpenBranch(path.Dir(p))
+			(*pGuiTreKeys).OpenBranch(path.Dir(p))
 			p = path.Dir(p)
 		}
-		(*pCollapse).SetIcon(theme.ZoomOutIcon())
+		(*pGuiButCollapse).SetIcon(theme.ZoomOutIcon())
 	}
 }

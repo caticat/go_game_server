@@ -17,19 +17,56 @@ import (
 )
 
 func initGUISetting(w fyne.Window) fyne.CanvasObject {
-	conf := getConf()
+	// 控件
+	var (
+		guiForBase       *widget.Form       = nil // 基础 基础页签
+		guiLabConnection *widget.Label      = nil // 连接 配置信息
+		guiSelConnection *widget.Select     = nil // 连接 选择框
+		guiButConnection *widget.Button     = nil // 连接 连接
+		guiButEdit       *widget.Button     = nil // 连接 编辑
+		guiButCreate     *widget.Button     = nil // 连接 创建
+		guiButDelete     *widget.Button     = nil // 连接 删除
+		guiGriHeader     *fyne.Container    = nil // 布局 头
+		guiBorConnection *fyne.Container    = nil // 布局 连接页签
+		guiConTab        *container.AppTabs = nil // 布局 总
+	)
 
 	// base
-	lbs := widget.NewForm(
-		widget.NewFormItem("dial-timeout", initGUISettingForm(conf.Base.DialTimeout, func(v int64) {
+	initGUISettingBase(w, &guiForBase)
+
+	// conn
+	initGUISettingConn(w,
+		&guiLabConnection,
+		&guiSelConnection,
+		&guiButConnection,
+		&guiButEdit,
+		&guiButCreate,
+		&guiButDelete,
+		&guiGriHeader,
+		&guiBorConnection,
+	)
+
+	// 页签
+	guiConTab = container.NewAppTabs(
+		container.NewTabItem("Connection", guiBorConnection),
+		container.NewTabItem("Base", guiForBase),
+	)
+
+	return guiConTab
+}
+
+func initGUISettingBase(w fyne.Window, pGuiForBase **widget.Form) {
+	conf := getConf()
+	*pGuiForBase = widget.NewForm(
+		widget.NewFormItem("dial-timeout", initGUISettingBaseFormItem(conf.Base.DialTimeout, func(v int64) {
 			conf.Base.DialTimeout = v
 			conf.SetBase(conf.Base)
 		})),
-		widget.NewFormItem("operation-timeout", initGUISettingForm(conf.Base.OperationTimeout, func(v int64) {
+		widget.NewFormItem("operation-timeout", initGUISettingBaseFormItem(conf.Base.OperationTimeout, func(v int64) {
 			conf.Base.OperationTimeout = v
 			conf.SetBase(conf.Base)
 		})),
-		widget.NewFormItem("lease-timeout-before-keep-aliv", initGUISettingForm(conf.Base.LeaseTimeoutBeforeKeepAlive, func(v int64) {
+		widget.NewFormItem("lease-timeout-before-keep-aliv", initGUISettingBaseFormItem(conf.Base.LeaseTimeoutBeforeKeepAlive, func(v int64) {
 			conf.Base.LeaseTimeoutBeforeKeepAlive = v
 			conf.SetBase(conf.Base)
 		})),
@@ -47,13 +84,67 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 			}, w).Show()
 		})),
 	)
+}
 
-	// conn
-	lep := widget.NewLabel("default text")
-	var search *widget.Select
-	var butConnect *widget.Button
-	butConnect = widget.NewButtonWithIcon("Connect", theme.LoginIcon(), func() { // 连接按钮前移,解决sarch的空指针问题
-		k := search.Selected
+func initGUISettingBaseFormItem(value int64, confirm func(int64)) *fyne.Container {
+	bindData := binding.NewString()
+	bindData.Set(fmt.Sprintf("%v", value))
+	guiEntValue := widget.NewEntryWithData(bindData)
+	guiEntValue.Disable()
+	var guiButEdit, guiButOK, guiButCancel *widget.Button
+	guiButEdit = widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
+		s, _ := bindData.Get()
+		value, _ = strconv.ParseInt(s, 10, 64)
+
+		guiEntValue.Enable()
+		guiButEdit.Hide()
+		guiButOK.Show()
+		guiButCancel.Show()
+	})
+	guiButOK = widget.NewButtonWithIcon(STR_EMPTY, theme.ConfirmIcon(), func() {
+		if s, err := bindData.Get(); err == nil {
+			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
+				if v != value {
+					confirm(v)
+				}
+			} else {
+				plog.Error(err)
+			}
+		} else {
+			plog.Error(err)
+		}
+		guiEntValue.Disable()
+		guiButEdit.Show()
+		guiButOK.Hide()
+		guiButCancel.Hide()
+	})
+	guiButCancel = widget.NewButtonWithIcon(STR_EMPTY, theme.CancelIcon(), func() {
+		bindData.Set(fmt.Sprintf("%v", value))
+		guiEntValue.Disable()
+		guiButEdit.Show()
+		guiButOK.Hide()
+		guiButCancel.Hide()
+	})
+	guiButOK.Hide()
+	guiButCancel.Hide()
+
+	return container.NewGridWithColumns(2, guiEntValue, container.NewHBox(guiButEdit, guiButOK, guiButCancel))
+}
+
+func initGUISettingConn(w fyne.Window,
+	pGuiLabConnection **widget.Label,
+	pGuiSelConnection **widget.Select,
+	pGuiButConnection **widget.Button,
+	pGuiButEdit **widget.Button,
+	pGuiButCreate **widget.Button,
+	pGuiButDelete **widget.Button,
+	pGuiGriHeader **fyne.Container,
+	pGuiBorConnection **fyne.Container,
+) {
+	conf := getConf()
+	*pGuiLabConnection = widget.NewLabel("default text")
+	*pGuiButConnection = widget.NewButtonWithIcon("Connect", theme.LoginIcon(), func() { // 连接按钮前移,解决sarch的空指针问题
+		k := (*pGuiSelConnection).Selected
 		_, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
@@ -63,48 +154,48 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 			dialog.NewError(err, w).Show()
 			return
 		}
-		butConnect.Disable()
+		(*pGuiButConnection).Disable()
 		dialog.NewInformation("Information", fmt.Sprintf("%s now is Connecting to: %q", WINDOW_TITLE, k), w).Show()
 	})
-	search = widget.NewSelect(conf.MapConn.M_sliKey, func(s string) {
+	*pGuiSelConnection = widget.NewSelect(conf.MapConn.M_sliKey, func(s string) {
 		c, ok := conf.MapConn.Get(s)
 		if !ok {
 			return
 		}
-		lep.SetText(phelp.ToJsonIndent(c))
+		(*pGuiLabConnection).SetText(phelp.ToJsonIndent(c))
 		if conf.ConnSelect == s {
-			butConnect.Disable()
+			(*pGuiButConnection).Disable()
 		} else {
-			butConnect.Enable()
+			(*pGuiButConnection).Enable()
 		}
 	})
-	search.SetSelected(conf.ConnSelect)
-	butEdit := widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
-		k := search.Selected
+	(*pGuiSelConnection).SetSelected(conf.ConnSelect)
+	*pGuiButEdit = widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
+		k := (*pGuiSelConnection).Selected
 		v, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
 			return
 		}
 		vOri := phelp.ToJsonIndent(v)
-		bv := binding.NewString()
-		bv.Set(vOri)
-		en := widget.NewMultiLineEntry()
-		en.Bind(bv)
-		en.SetPlaceHolder("json format")
-		en.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
-		en.Validator = func(s string) error {
+		binV := binding.NewString()
+		binV.Set(vOri)
+		guiEntV := widget.NewMultiLineEntry()
+		guiEntV.Bind(binV)
+		guiEntV.SetPlaceHolder("json format")
+		guiEntV.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
+		guiEntV.Validator = func(s string) error {
 			if json.Valid([]byte(s)) {
 				return nil
 			}
 			return ErrorInputNeedJsonFormat
 		}
-		di := dialog.NewForm("Edit", "OK", "Cancel",
-			[]*widget.FormItem{widget.NewFormItem(k, en)}, func(b bool) {
+		d := dialog.NewForm("Edit", "OK", "Cancel",
+			[]*widget.FormItem{widget.NewFormItem(k, guiEntV)}, func(b bool) {
 				if !b {
 					return
 				}
-				v, _ := bv.Get()
+				v, _ := binV.Get()
 				if v == vOri {
 					return
 				}
@@ -120,17 +211,17 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 					return
 				}
 
-				search.OnChanged(k)
+				(*pGuiSelConnection).OnChanged(k)
 			}, w)
 
-		di.Resize(w.Canvas().Size())
-		di.Show()
+		d.Resize(w.Canvas().Size())
+		d.Show()
 	})
-	butCreate := widget.NewButtonWithIcon(STR_EMPTY, theme.ContentAddIcon(), func() {
-		bk := binding.NewString()
-		ek := widget.NewEntry()
-		ek.Bind(bk)
-		ek.Validator = func(s string) error {
+	*pGuiButCreate = widget.NewButtonWithIcon(STR_EMPTY, theme.ContentAddIcon(), func() {
+		binK := binding.NewString()
+		guiEntK := widget.NewEntry()
+		guiEntK.Bind(binK)
+		guiEntK.Validator = func(s string) error {
 			if s == "" {
 				return ErrorConnectionNameEmpty
 			}
@@ -140,28 +231,28 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 			return nil
 		}
 
-		bv := binding.NewString()
-		bv.Set(GUI_SETTING_CREATE_CONN_PLACEHOLDER)
-		en := widget.NewMultiLineEntry()
-		en.Bind(bv)
-		en.SetPlaceHolder("json format")
-		en.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
-		en.Validator = func(s string) error {
+		binV := binding.NewString()
+		binV.Set(GUI_SETTING_CREATE_CONN_PLACEHOLDER)
+		guiEntV := widget.NewMultiLineEntry()
+		guiEntV.Bind(binV)
+		guiEntV.SetPlaceHolder("json format")
+		guiEntV.SetMinRowsVisible(GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM)
+		guiEntV.Validator = func(s string) error {
 			if json.Valid([]byte(s)) {
 				return nil
 			}
 			return ErrorInputNeedJsonFormat
 		}
-		di := dialog.NewForm("Add", "OK", "Cancel",
+		d := dialog.NewForm("Add", "OK", "Cancel",
 			[]*widget.FormItem{
-				widget.NewFormItem("ConnName", ek),
-				widget.NewFormItem("Conn", en),
+				widget.NewFormItem("ConnName", guiEntK),
+				widget.NewFormItem("Conn", guiEntV),
 			}, func(b bool) {
 				if !b {
 					return
 				}
-				k, _ := bk.Get()
-				v, _ := bv.Get()
+				k, _ := binK.Get()
+				v, _ := binV.Get()
 				if k == STR_EMPTY || v == STR_EMPTY {
 					dialog.NewError(ErrorInputDataEmpty, w).Show()
 					return
@@ -179,22 +270,22 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 
 				conf.AddConn(k, c)
 
-				search.Options = conf.MapConn.M_sliKey
-				search.Refresh()
-				search.SetSelected(k)
+				(*pGuiSelConnection).Options = conf.MapConn.M_sliKey
+				(*pGuiSelConnection).Refresh()
+				(*pGuiSelConnection).SetSelected(k)
 			}, w)
 
-		di.Resize(w.Canvas().Size())
-		di.Show()
+		d.Resize(w.Canvas().Size())
+		d.Show()
 	})
-	butDelete := widget.NewButtonWithIcon(STR_EMPTY, theme.DeleteIcon(), func() {
-		k := search.Selected
+	*pGuiButDelete = widget.NewButtonWithIcon(STR_EMPTY, theme.DeleteIcon(), func() {
+		k := (*pGuiSelConnection).Selected
 		_, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
 			return
 		}
-		di := dialog.NewConfirm("Delete", "Delete ConnName:"+k, func(b bool) {
+		d := dialog.NewConfirm("Delete", "Delete ConnName:"+k, func(b bool) {
 			if !b {
 				return
 			}
@@ -204,66 +295,15 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 
-			search.Options = conf.MapConn.M_sliKey
-			search.Refresh()
-			search.ClearSelected()
+			(*pGuiSelConnection).Options = conf.MapConn.M_sliKey
+			(*pGuiSelConnection).Refresh()
+			(*pGuiSelConnection).ClearSelected()
+			(*pGuiLabConnection).SetText("")
 		}, w)
 
-		di.Show()
+		d.Show()
 	})
 
-	header := container.NewGridWithColumns(2, search, container.NewHBox(butConnect, butEdit, butCreate, butDelete))
-	cep := container.NewBorder(header, nil, nil, nil, lep)
-
-	con := container.NewAppTabs(
-		container.NewTabItem("Connection", cep),
-		container.NewTabItem("Base", lbs),
-	)
-
-	return con
-}
-
-func initGUISettingForm(value int64, confirm func(int64)) *fyne.Container {
-	bindData := binding.NewString()
-	bindData.Set(fmt.Sprintf("%v", value))
-	ent := widget.NewEntryWithData(bindData)
-	ent.Disable()
-	var butEdit, butOK, butCancel *widget.Button
-	butEdit = widget.NewButtonWithIcon(STR_EMPTY, theme.DocumentCreateIcon(), func() {
-		s, _ := bindData.Get()
-		value, _ = strconv.ParseInt(s, 10, 64)
-
-		ent.Enable()
-		butEdit.Hide()
-		butOK.Show()
-		butCancel.Show()
-	})
-	butOK = widget.NewButtonWithIcon(STR_EMPTY, theme.ConfirmIcon(), func() {
-		if s, err := bindData.Get(); err == nil {
-			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
-				if v != value {
-					confirm(v)
-				}
-			} else {
-				plog.Error(err)
-			}
-		} else {
-			plog.Error(err)
-		}
-		ent.Disable()
-		butEdit.Show()
-		butOK.Hide()
-		butCancel.Hide()
-	})
-	butCancel = widget.NewButtonWithIcon(STR_EMPTY, theme.CancelIcon(), func() {
-		bindData.Set(fmt.Sprintf("%v", value))
-		ent.Disable()
-		butEdit.Show()
-		butOK.Hide()
-		butCancel.Hide()
-	})
-	butOK.Hide()
-	butCancel.Hide()
-
-	return container.NewGridWithColumns(2, ent, container.NewHBox(butEdit, butOK, butCancel))
+	*pGuiGriHeader = container.NewGridWithColumns(2, *pGuiSelConnection, container.NewHBox(*pGuiButConnection, *pGuiButEdit, *pGuiButCreate, *pGuiButDelete))
+	*pGuiBorConnection = container.NewBorder(*pGuiGriHeader, nil, nil, nil, *pGuiLabConnection)
 }
