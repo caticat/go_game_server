@@ -12,7 +12,7 @@ func updateWindowTitle(w fyne.Window) {
 	if !getConnected() {
 		connTxt = "Disconnected"
 	}
-	w.SetTitle(fmt.Sprintf("%s[%s:%s]", WINDOW_TITLE, connTxt, getConf().EndPointSelect))
+	w.SetTitle(fmt.Sprintf("%s[%s:%s]", WINDOW_TITLE, connTxt, getConf().ConnSelect))
 }
 
 func toJsonIndent[T any](t T) (string, error) {

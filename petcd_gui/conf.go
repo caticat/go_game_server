@@ -11,18 +11,18 @@ import (
 )
 
 type ConfigEtcdGUI struct {
-	Base           *petcd.ConfigEtcdBase               `json:"base"`            // 连接基础信息
-	EndPointSelect string                              `json:"endpoint-select"` // 当前选择的连接节点
-	MapEndPoint    *phelp.PSortedMap[string, []string] `json:"endpoint-list"`   // 所有连接节点配置 <连接名, 配置>
-	LogLevel       int                                 `json:"log-level"`       // 日志等级
+	Base       *petcd.ConfigEtcdBase                            `json:"base"`        // 连接基础信息
+	ConnSelect string                                           `json:"conn-select"` // 当前选择的连接名
+	MapConn    *phelp.PSortedMap[string, *petcd.ConfigEtcdConn] `json:"conn-list"`   // 所有连接节点配置 <连接名, 配置>
+	LogLevel   int                                              `json:"log-level"`   // 日志等级
 }
 
 func NewConfigEtcdGUI() *ConfigEtcdGUI {
 	return &ConfigEtcdGUI{
-		Base:           petcd.NewConfigEtcdBase(),
-		EndPointSelect: PETCD_CFG_ENDPOINT_SELECT_DEFAULT,
-		MapEndPoint:    phelp.NewPSortedMap[string, []string](),
-		LogLevel:       int(plog.ELogLevel_Debug),
+		Base:       petcd.NewConfigEtcdBase(),
+		ConnSelect: PETCD_CFG_CONN_SELECT_DEFAULT,
+		MapConn:    phelp.NewPSortedMap[string, *petcd.ConfigEtcdConn](),
+		LogLevel:   int(plog.ELogLevel_Debug),
 	}
 }
 
@@ -44,19 +44,19 @@ func (t *ConfigEtcdGUI) Init() error {
 	t.Base.EnableReInit = true // GUI工具这里强制可重复开启
 
 	// 连接配置
-	cfgEndPointList := a.Preferences().StringWithFallback(PETCD_CFG_ENDPOINT_LIST, PETCD_CFG_ENDPOINT_LIST_DEFAULT)
-	tm := make(map[string][]string)
-	if err := json.Unmarshal([]byte(cfgEndPointList), &tm); err != nil {
+	cfgConnList := a.Preferences().StringWithFallback(PETCD_CFG_CONN_LIST, PETCD_CFG_CONN_LIST_DEFAULT)
+	tm := make(map[string]*petcd.ConfigEtcdConn)
+	if err := json.Unmarshal([]byte(cfgConnList), &tm); err != nil {
 		return err
 	}
-	t.MapEndPoint.InitByMap(tm)
+	t.MapConn.InitByMap(tm)
 
 	// 当前选择的连接节点
-	t.EndPointSelect = a.Preferences().StringWithFallback(PETCD_CFG_ENDPOINT_SELECT, PETCD_CFG_ENDPOINT_SELECT_DEFAULT)
-	if _, ok := t.MapEndPoint.Get(t.EndPointSelect); !ok {
-		if t.MapEndPoint.Length() > 0 {
-			if k, _, err := t.MapEndPoint.GetByIndex(0); err == nil {
-				t.EndPointSelect = k
+	t.ConnSelect = a.Preferences().StringWithFallback(PETCD_CFG_CONN_SELECT, PETCD_CFG_CONN_SELECT_DEFAULT)
+	if _, ok := t.MapConn.Get(t.ConnSelect); !ok {
+		if t.MapConn.Length() > 0 {
+			if k, _, err := t.MapConn.GetByIndex(0); err == nil {
+				t.ConnSelect = k
 			}
 		}
 	}
@@ -68,15 +68,16 @@ func (t *ConfigEtcdGUI) Init() error {
 	return nil
 }
 
+// 拼接PETCD的连接配置
 func (t *ConfigEtcdGUI) GetCfgETCD() *petcd.ConfigEtcd {
 	c := petcd.NewConfigEtcd()
 
 	// base
 	c.SetBase(t.Base)
 
-	// endpoint
-	if v, ok := t.MapEndPoint.Get(t.EndPointSelect); ok {
-		c.SetEndpoints(v)
+	// conn
+	if v, ok := t.MapConn.Get(t.ConnSelect); ok {
+		c.SetConn(v)
 	}
 
 	return c
@@ -96,58 +97,58 @@ func (t *ConfigEtcdGUI) SetBase(c *petcd.ConfigEtcdBase) {
 }
 
 func (t *ConfigEtcdGUI) SetSelect(s string) error {
-	if _, ok := t.MapEndPoint.Get(s); !ok {
+	if _, ok := t.MapConn.Get(s); !ok {
 		return ErrorSelectEtcdEndPointNotFound
 	}
 
-	if t.EndPointSelect != s {
-		t.EndPointSelect = s
+	if t.ConnSelect != s {
+		t.ConnSelect = s
 		a := getApp()
-		a.Preferences().SetString(PETCD_CFG_ENDPOINT_SELECT, string(s))
+		a.Preferences().SetString(PETCD_CFG_CONN_SELECT, string(s))
 	}
 
 	return t.reconnect()
 }
 
-func (t *ConfigEtcdGUI) AddEndPoint(n string, c []string) error {
-	if _, ok := t.MapEndPoint.Get(n); ok {
+func (t *ConfigEtcdGUI) AddConn(n string, c *petcd.ConfigEtcdConn) error {
+	if _, ok := t.MapConn.Get(n); ok {
 		return ErrorDuplicateEtcdEndPointName
 	}
 
-	t.MapEndPoint.Set(n, c)
+	t.MapConn.Set(n, c)
 
 	return t.saveEndPoint()
 }
 
-func (t *ConfigEtcdGUI) ModEndPoint(n string, c []string) error {
-	_, ok := t.MapEndPoint.Get(n)
+func (t *ConfigEtcdGUI) ModConn(n string, c *petcd.ConfigEtcdConn) error {
+	_, ok := t.MapConn.Get(n)
 	if !ok {
 		return ErrorPathHasNoData
 	}
 
-	t.MapEndPoint.Set(n, c)
+	t.MapConn.Set(n, c)
 
 	if err := t.saveEndPoint(); err != nil {
 		return err
 	}
 
-	if t.EndPointSelect == n {
+	if t.ConnSelect == n {
 		return t.reconnect()
 	} else {
 		return nil
 	}
 }
 
-func (t *ConfigEtcdGUI) DelEndPoint(n string) error {
-	if _, ok := t.MapEndPoint.Get(n); !ok {
+func (t *ConfigEtcdGUI) DelConn(n string) error {
+	if _, ok := t.MapConn.Get(n); !ok {
 		return ErrorPathHasNoData
 	}
 
-	if t.EndPointSelect == n { // 不能删除当前连接
+	if t.ConnSelect == n { // 不能删除当前连接
 		return ErrorDeleteSelectingEndPoint
 	}
 
-	t.MapEndPoint.Del(n)
+	t.MapConn.Del(n)
 
 	if err := t.saveEndPoint(); err != nil {
 		return err
@@ -158,8 +159,8 @@ func (t *ConfigEtcdGUI) DelEndPoint(n string) error {
 
 func (t *ConfigEtcdGUI) saveEndPoint() error {
 	a := getApp()
-	if s, err := toJsonIndent(t.MapEndPoint.GetMap()); err == nil {
-		a.Preferences().SetString(PETCD_CFG_ENDPOINT_LIST, s)
+	if s, err := toJsonIndent(t.MapConn.GetMap()); err == nil {
+		a.Preferences().SetString(PETCD_CFG_CONN_LIST, s)
 		return nil
 	} else {
 		return err
@@ -181,7 +182,7 @@ func (t *ConfigEtcdGUI) reconnect() error {
 	// 刷新界面
 	setConnected(true)
 	getFunUpdateTitle()()
-	getFunGUIRefresh()()
+	getFunGUIHomeRefresh()()
 
 	return nil
 }
@@ -202,8 +203,8 @@ func (t *ConfigEtcdGUI) clearPreferences() {
 	a := getApp()
 
 	a.Preferences().RemoveValue(PETCD_CFG_BASE)
-	a.Preferences().RemoveValue(PETCD_CFG_ENDPOINT_SELECT)
-	a.Preferences().RemoveValue(PETCD_CFG_ENDPOINT_LIST)
+	a.Preferences().RemoveValue(PETCD_CFG_CONN_SELECT)
+	a.Preferences().RemoveValue(PETCD_CFG_CONN_LIST)
 	a.Preferences().RemoveValue(PETCD_CFG_LOG_LEVEL)
 
 	time.Sleep(time.Second) // 暂停一下保证数据保存完毕

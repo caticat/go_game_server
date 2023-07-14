@@ -10,7 +10,7 @@ var (
 	ErrorSelectEtcdEndPointNotFound = errors.New("select Etcd EndPoint not found")
 	ErrorDuplicateEtcdEndPointName  = errors.New("duplicate Etcd EndPoint Name")
 	ErrorInputDataEmpty             = errors.New("input Data Can't Be Empty")
-	ErrorEndPointNameAlreadyExist   = errors.New("endpoint name already exist")
+	ErrorConnNameAlreadyExist       = errors.New("conn name already exist")
 	ErrorAppResetDone               = errors.New("app reset done")
 	ErrorDeleteSelectingEndPoint    = errors.New("can not delete selecting endpoint")
 	ErrorConnectToEtcdFailed        = errors.New("connect to ETCD failed")

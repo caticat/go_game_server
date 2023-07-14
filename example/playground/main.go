@@ -20,7 +20,8 @@ func main() {
 	// testPETCDWatch()
 	// testPETCDFlushDB()
 	// testPETCDCompact()
-	testPETCDPrefix()
+	// testPETCDPrefix()
+	testPETCDAuth()
 }
 
 func testETCD() {
@@ -243,6 +244,25 @@ func testPETCDPrefix() {
 
 	root := pdata.NewPEtcdRoot()
 	root.SetAll(mapResult)
+
+	plog.DebugLn(mapResult)
+}
+
+func testPETCDAuth() {
+	t := petcd.NewConfigEtcd()
+	t.Endpoints = []string{"http://localhost:60001", "http://localhost:60002", "http://localhost:60003"}
+	t.DialTimeout = 1
+	t.OperationTimeout = 1
+	t.LeaseTimeoutBeforeKeepAlive = 10
+	t.Auth.Username = "pan"
+	t.Auth.Password = "pan"
+	petcd.Init(t)
+	defer petcd.Close()
+
+	mapResult := make(map[string]string)
+	if err := petcd.GetPrefix(pdata.PDATA_PREFIX, mapResult); err != nil {
+		plog.Error(err)
+	}
 
 	plog.DebugLn(mapResult)
 }
