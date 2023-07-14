@@ -11,8 +11,8 @@ import (
 )
 
 func initGUIInfo(w fyne.Window, c binding.String) fyne.CanvasObject {
-	urlRespitory, _ := url.Parse("https://github.com/caticat/go_game_server/petcd_gui")
-	urlLink := widget.NewHyperlink("github.com/caticat/go_game_server/petcd_gui", urlRespitory)
+	urlRespitory, _ := url.Parse("https://github.com/caticat/go_game_server")
+	urlLink := widget.NewHyperlink("github.com/caticat/go_game_server", urlRespitory)
 
 	return container.NewScroll(
 		container.NewVBox(
