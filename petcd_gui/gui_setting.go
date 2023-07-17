@@ -391,7 +391,7 @@ func initGUISettingImport(w fyne.Window, pGuiBorImport **fyne.Container) {
 	}
 
 	// 界面
-	*pGuiBorImport = container.NewMax(container.NewDocTabs(
+	*pGuiBorImport = container.NewMax(container.NewAppTabs(
 		container.NewTabItem("From File", container.NewVBox(widget.NewButtonWithIcon("Open File(Need Json Format)", theme.FolderOpenIcon(), func() {
 			diaFile := dialog.NewFileOpen(func(f fyne.URIReadCloser, err error) {
 				if err != nil {
