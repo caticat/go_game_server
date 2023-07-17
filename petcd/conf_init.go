@@ -29,6 +29,15 @@ func ProcessEtcdInit(cfg *ConfigEtcdInit) error {
 	}
 	defer Close()
 
+	return ProcessEtcdInitWithoutConn(cfg)
+}
+
+// 跑初始化配置
+func ProcessEtcdInitWithoutConn(cfg *ConfigEtcdInit) error {
+	if cfg == nil {
+		return ErrorNilConfig
+	}
+
 	// 清档
 	if cfg.FlushDB {
 		FlushDB()
@@ -36,8 +45,19 @@ func ProcessEtcdInit(cfg *ConfigEtcdInit) error {
 
 	// 初始化数据
 	for _, p := range cfg.EtcdKVList {
-		Put(p.Key, p.Value)
+		if err := Put(p.Key, p.Value); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (t *ConfigEtcdInit) SetBase(b *ConfigEtcdInitBase) {
+	t.FlushDB = b.FlushDB
+	t.EtcdKVList = b.EtcdKVList
+}
+
+func (t *ConfigEtcdInit) SetConfigEtcd(c *ConfigEtcd) {
+	t.ConfigEtcd = c
 }

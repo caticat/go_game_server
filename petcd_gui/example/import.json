@@ -1,0 +1,9 @@
+{
+	"flush_db": false,
+	"list_key_value": [
+		{
+			"key": "/exampleKey",
+			"value": "exampleValue34"
+		}
+	]
+}

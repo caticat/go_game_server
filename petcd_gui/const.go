@@ -6,6 +6,8 @@ const (
 	// App
 	APP_ID       = "com.github.caticat.go_game_server.petcd_gui"
 	WINDOW_TITLE = "PEtcdGUI"
+	APP_AUTHOR   = "Pan J"
+	APP_VER      = "v0.0.2" // 版本号
 
 	// key
 	PETCD_CFG_BASE        = "cfg-base"
@@ -61,7 +63,8 @@ const (
 	}
 }
 ` // Setting界面创建连接提示
-	GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM = 20   // 编辑连接界面输入框的行数
-	GUI_WINDOW_INIT_SIZE_W               = 1000 // 窗口初始大小W
-	GUI_WINDOW_INIT_SIZE_H               = 700  // 窗口初始大小H
+	GUI_SETTING_EDIT_CONN_ENTRY_LINE_NUM   = 20   // 编辑连接界面输入框的行数
+	GUI_SETTING_EDIT_IMPORT_ENTRY_LINE_NUM = 25   // 编辑导入界面输入框的行数
+	GUI_WINDOW_INIT_SIZE_W                 = 1000 // 窗口初始大小W
+	GUI_WINDOW_INIT_SIZE_H                 = 700  // 窗口初始大小H
 )

@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	ptheme "github.com/caticat/go_game_server/petcd_gui/theme"
 	"github.com/caticat/go_game_server/phelp"
+	"github.com/caticat/go_game_server/plog"
 )
 
 func runGUI(err error) {
@@ -50,10 +51,12 @@ func runGUI(err error) {
 	if err != nil {
 		setConnected(false)
 		getFunUpdateTitle()()
-		dialog.NewError(errors.Join(ErrorConnectToEtcdFailed,
+		e := errors.Join(ErrorConnectToEtcdFailed,
 			err,
 			fmt.Errorf("etcd Selected:%s", getConf().ConnSelect),
-			ErrorConnectToEtcdFailedInfo), w).Show()
+			ErrorConnectToEtcdFailedInfo)
+		dialog.NewError(e, w).Show()
+		plog.ErrorLn(e)
 	} else {
 		setConnected(true)
 		getFunUpdateTitle()()

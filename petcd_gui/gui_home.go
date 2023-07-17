@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/caticat/go_game_server/petcd"
 	"github.com/caticat/go_game_server/petcd/pdata"
+	"github.com/caticat/go_game_server/plog"
 )
 
 func initGUIHome(w fyne.Window) fyne.CanvasObject {
@@ -106,6 +107,7 @@ func initGUIHomeHead(w fyne.Window,
 	(*pGuiSelSearch).OnSubmitted = func(s string) {
 		if _, ok := root.GetValue(s); !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
+			plog.ErrorLn(ErrorPathHasNoData)
 			return
 		}
 		guiTreKeys.Select(s)
@@ -139,6 +141,7 @@ func initGUIHomeHead(w fyne.Window,
 		key := getEtcdKey()
 		if key == STR_EMPTY {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
+			plog.ErrorLn(ErrorNoPathSelect)
 			return
 		}
 		v, _ := getEtcdValue().Get()
@@ -155,6 +158,7 @@ func initGUIHomeHead(w fyne.Window,
 				petcd.PutKeepLease(key, v)
 				(*pGuiButRefresh).OnTapped() // 刷新界面
 				guiTreKeys.Select(key)       // 重新选择指定条目
+				plog.InfoF("put(mod) %q %q\n", key, v)
 			}, w)
 
 		guiDia.Resize(w.Canvas().Size())
@@ -190,15 +194,18 @@ func initGUIHomeHead(w fyne.Window,
 				v, _ := binV.Get()
 				if k == STR_EMPTY {
 					dialog.NewError(ErrorEmptyPath, w).Show()
+					plog.ErrorLn(ErrorEmptyPath)
 					return
 				}
 				if !strings.HasPrefix(k, pdata.PDATA_PREFIX) {
 					dialog.NewError(ErrorBadPathPrefix, w).Show()
+					plog.ErrorLn(ErrorBadPathPrefix)
 					return
 				}
 				petcd.PutKeepLease(k, v)
 				(*pGuiButRefresh).OnTapped() // 刷新界面
 				guiTreKeys.Select(k)         // 重新选择指定条目
+				plog.InfoF("put(add) %q %q\n", k, v)
 			}, w)
 
 		guiDia.Resize(w.Canvas().Size())
@@ -210,10 +217,12 @@ func initGUIHomeHead(w fyne.Window,
 		k := getEtcdKey()
 		if k == STR_EMPTY {
 			dialog.NewError(ErrorNoPathSelect, w).Show()
+			plog.ErrorLn(ErrorNoPathSelect)
 			return
 		}
 		if _, ok := root.GetValue(k); !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
+			plog.ErrorLn(ErrorPathHasNoData)
 			return
 		}
 		dialog.NewConfirm("Delete", fmt.Sprintf("Delete %q ?(Single Node, Not include Hierarchies)", k), func(b bool) {
@@ -222,6 +231,7 @@ func initGUIHomeHead(w fyne.Window,
 			}
 			petcd.Del(k)
 			(*pGuiButRefresh).OnTapped() // 刷新界面
+			plog.InfoF("del %q\n", k)
 		}, w).Show()
 	})
 

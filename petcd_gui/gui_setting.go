@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -29,6 +30,8 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		guiGriHeader     *fyne.Container    = nil // 布局 头
 		guiBorConnection *fyne.Container    = nil // 布局 连接页签
 		guiConTab        *container.AppTabs = nil // 布局 总
+		guiBorImport     *fyne.Container    = nil // 布局 导入
+		guiBorExport     *fyne.Container    = nil // 布局 导出
 	)
 
 	// base
@@ -46,10 +49,18 @@ func initGUISetting(w fyne.Window) fyne.CanvasObject {
 		&guiBorConnection,
 	)
 
+	// import
+	initGUISettingImport(w, &guiBorImport)
+
+	// export
+	initGUISettingExport(w, &guiBorExport)
+
 	// 页签
 	guiConTab = container.NewAppTabs(
 		container.NewTabItem("Connection", guiBorConnection),
 		container.NewTabItem("Base", guiForBase),
+		container.NewTabItem("Import", guiBorImport),
+		container.NewTabItem("Export", guiBorExport),
 	)
 
 	return guiConTab
@@ -148,14 +159,18 @@ func initGUISettingConn(w fyne.Window,
 		_, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
+			plog.ErrorLn(ErrorPathHasNoData)
 			return
 		}
 		if err := conf.SetSelect(k); err != nil {
 			dialog.NewError(err, w).Show()
+			plog.ErrorLn(err)
 			return
 		}
 		(*pGuiButConnection).Disable()
-		dialog.NewInformation("Information", fmt.Sprintf("%s now is Connecting to: %q", WINDOW_TITLE, k), w).Show()
+		msg := fmt.Sprintf("%s now is Connecting to: %q", WINDOW_TITLE, k)
+		dialog.NewInformation("Information", msg, w).Show()
+		plog.InfoLn(msg)
 	})
 	*pGuiSelConnection = widget.NewSelect(conf.MapConn.M_sliKey, func(s string) {
 		c, ok := conf.MapConn.Get(s)
@@ -175,6 +190,7 @@ func initGUISettingConn(w fyne.Window,
 		v, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
+			plog.ErrorLn(ErrorPathHasNoData)
 			return
 		}
 		vOri := phelp.ToJsonIndent(v)
@@ -203,15 +219,18 @@ func initGUISettingConn(w fyne.Window,
 				c := petcd.NewConfigEtccdConn()
 				if err := json.Unmarshal([]byte(v), &c); err != nil {
 					dialog.NewError(err, w).Show()
+					plog.ErrorLn(err)
 					return
 				}
 
 				if err := conf.ModConn(k, c); err != nil {
 					dialog.NewError(err, w).Show()
+					plog.ErrorLn(err)
 					return
 				}
 
 				(*pGuiSelConnection).OnChanged(k)
+				plog.InfoF("mod conn:%q\n", k)
 			}, w)
 
 		d.Resize(w.Canvas().Size())
@@ -255,16 +274,19 @@ func initGUISettingConn(w fyne.Window,
 				v, _ := binV.Get()
 				if k == STR_EMPTY || v == STR_EMPTY {
 					dialog.NewError(ErrorInputDataEmpty, w).Show()
+					plog.ErrorLn(ErrorInputDataEmpty)
 					return
 				}
 				if _, ok := conf.MapConn.Get(k); ok {
 					dialog.NewError(ErrorConnNameAlreadyExist, w).Show()
+					plog.ErrorLn(ErrorConnNameAlreadyExist)
 					return
 				}
 
 				c := petcd.NewConfigEtccdConn()
 				if err := json.Unmarshal([]byte(v), &c); err != nil {
 					dialog.NewError(err, w).Show()
+					plog.ErrorLn(err)
 					return
 				}
 
@@ -273,6 +295,7 @@ func initGUISettingConn(w fyne.Window,
 				(*pGuiSelConnection).Options = conf.MapConn.M_sliKey
 				(*pGuiSelConnection).Refresh()
 				(*pGuiSelConnection).SetSelected(k)
+				plog.InfoF("add conn:%q\n", k)
 			}, w)
 
 		d.Resize(w.Canvas().Size())
@@ -283,6 +306,7 @@ func initGUISettingConn(w fyne.Window,
 		_, ok := conf.MapConn.Get(k)
 		if !ok {
 			dialog.NewError(ErrorPathHasNoData, w).Show()
+			plog.ErrorLn(ErrorPathHasNoData)
 			return
 		}
 		d := dialog.NewConfirm("Delete", "Delete ConnName:"+k, func(b bool) {
@@ -292,6 +316,7 @@ func initGUISettingConn(w fyne.Window,
 
 			if err := conf.DelConn(k); err != nil {
 				dialog.NewError(err, w).Show()
+				plog.ErrorLn(err)
 				return
 			}
 
@@ -299,6 +324,7 @@ func initGUISettingConn(w fyne.Window,
 			(*pGuiSelConnection).Refresh()
 			(*pGuiSelConnection).ClearSelected()
 			(*pGuiLabConnection).SetText("")
+			plog.InfoF("del conn:%q\n", k)
 		}, w)
 
 		d.Show()
@@ -306,4 +332,134 @@ func initGUISettingConn(w fyne.Window,
 
 	*pGuiGriHeader = container.NewGridWithColumns(2, *pGuiSelConnection, container.NewHBox(*pGuiButConnection, *pGuiButEdit, *pGuiButCreate, *pGuiButDelete))
 	*pGuiBorConnection = container.NewBorder(*pGuiGriHeader, nil, nil, nil, *pGuiLabConnection)
+}
+
+func initGUISettingImport(w fyne.Window, pGuiBorImport **fyne.Container) {
+	// 导入数据输入框内容
+	tmpCB := petcd.NewConfigEtcdInitBase()
+	tmpCB.EtcdKVList = append(tmpCB.EtcdKVList, petcd.NewEtcdKV("/exampleKey", "exampleValue"))
+	binJsonData := binding.NewString()
+	binJsonData.Set(phelp.ToJsonIndent(tmpCB))
+	guiEntJsonData := widget.NewMultiLineEntry()
+	guiEntJsonData.Bind(binJsonData)
+	guiEntJsonData.SetMinRowsVisible(GUI_SETTING_EDIT_IMPORT_ENTRY_LINE_NUM)
+	guiEntJsonData.Validator = func(s string) error {
+		if json.Valid([]byte(s)) {
+			return nil
+		}
+		return ErrorInputNeedJsonFormat
+	}
+
+	// 导入数据触发
+	funImportJsonData := func() {
+		jsonData, err := binJsonData.Get()
+		if err != nil {
+			dialog.NewError(err, w).Show()
+			plog.ErrorLn(err)
+			return
+		}
+		cb := petcd.NewConfigEtcdInitBase()
+		if err = json.Unmarshal([]byte(jsonData), cb); err != nil {
+			dialog.NewError(err, w).Show()
+			plog.ErrorLn(err)
+			return
+		}
+		if !getConnected() {
+			dialog.NewError(ErrorEtcdNotConnected, w).Show()
+			plog.ErrorLn(ErrorEtcdNotConnected)
+			return
+		}
+		c := petcd.NewConfigEtcdInit()
+		c.SetConfigEtcd(getConf().GetCfgETCD())
+		c.SetBase(cb)
+		diaCon := dialog.NewCustomConfirm("Run Init Etcd Data?", "Confirm", "Cancel", container.NewScroll(widget.NewLabel(phelp.ToJsonIndent(c))), func(b bool) {
+			if !b {
+				return
+			}
+			if err = petcd.ProcessEtcdInitWithoutConn(c); err != nil {
+				dialog.NewError(err, w).Show()
+				plog.ErrorLn(err)
+				return
+			}
+			dialog.NewInformation("Infomation", "Init Ectd Data Done", w).Show()
+			getFunGUIHomeRefresh()()
+			plog.InfoLn("import ectd data done")
+		}, w)
+		// dialog.NewConfirm("Run Init Etcd Data?", phelp.ToJsonIndent(c), )
+		diaCon.Resize(w.Canvas().Size())
+		diaCon.Show()
+	}
+
+	// 界面
+	*pGuiBorImport = container.NewMax(container.NewDocTabs(
+		container.NewTabItem("From File", container.NewVBox(widget.NewButtonWithIcon("Open File(Need Json Format)", theme.FolderOpenIcon(), func() {
+			diaFile := dialog.NewFileOpen(func(f fyne.URIReadCloser, err error) {
+				if err != nil {
+					plog.ErrorLn(err)
+					return
+				}
+				if f == nil { // 主动关闭
+					return
+				}
+				bs, err := io.ReadAll(f)
+				if err != nil {
+					plog.ErrorLn(err)
+					return
+				}
+				binJsonData.Set(string(bs))
+				funImportJsonData()
+			}, w)
+			diaFile.Resize(w.Canvas().Size())
+			diaFile.Show()
+		}))),
+		container.NewTabItem("From Editor", container.NewScroll(
+			container.NewVBox(
+				widget.NewLabel("Json Data:"),
+				guiEntJsonData,
+				widget.NewButtonWithIcon("Submit", theme.ConfirmIcon(), func() {
+					funImportJsonData()
+				}),
+			),
+		)),
+	))
+}
+
+func initGUISettingExport(w fyne.Window, pGuiBorExport **fyne.Container) {
+	*pGuiBorExport = container.NewVBox(widget.NewButtonWithIcon("Export", theme.DocumentSaveIcon(), func() {
+		diaFile := dialog.NewFileSave(func(uc fyne.URIWriteCloser, err error) {
+			if uc == nil {
+				return
+			}
+			cb := petcd.NewConfigEtcdInitBase()
+			root := getEtcdData()
+			ks := root.AllKeys()
+			cb.EtcdKVList = make([]*petcd.EtcdKV, 0, len(ks))
+			for _, k := range ks {
+				v, ok := root.GetValue(k)
+				if !ok {
+					plog.ErrorLn("key:", k, " has not found")
+					continue
+				}
+				cb.EtcdKVList = append(cb.EtcdKVList, petcd.NewEtcdKV(k, v))
+			}
+			jsonData := phelp.ToJsonIndent(cb)
+			l := len(jsonData)
+			for l > 0 {
+				n, err := io.WriteString(uc, jsonData)
+				if err != nil {
+					dialog.NewError(err, w).Show()
+					plog.ErrorLn(err)
+					break
+				}
+				l -= n
+			}
+			if l <= 0 {
+				msg := fmt.Sprintf("export etcd eata to %q done", uc.URI())
+				dialog.NewInformation("Export", msg, w).Show()
+				plog.InfoLn(msg)
+			}
+		}, w)
+		diaFile.Resize(w.Canvas().Size())
+		diaFile.Show()
+	}))
 }

@@ -25,7 +25,7 @@
 	- [x] etcd配置文件初始化
 	- [ ] GUI修改数据支持
 		- [x] go-app的方式实现失败,应该是etcd的引用库和gui的引用库版本冲突,没找到解决方法`https://github.com/maxence-charriere/go-app`
-	- [ ] GUI
+	- [x] GUI
 		- [x] 查询
 			- [x] 当前只有选择查询
 		- [x] 添加

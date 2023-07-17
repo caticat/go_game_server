@@ -18,4 +18,5 @@ var (
 	ErrorConnectToEtcdFailedInfo      = errors.New("check ETCD Connection config or dial-timeout")
 	ErrorConnectionNameEmpty          = errors.New("connection name is empty")
 	ErrorInputNeedJsonFormat          = errors.New("input data need json format")
+	ErrorEtcdNotConnected             = errors.New("etcd is not connected")
 )

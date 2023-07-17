@@ -18,9 +18,9 @@ func initGUIInfo(w fyne.Window, c binding.String) fyne.CanvasObject {
 		container.NewVBox(
 			widget.NewLabel("Information"),
 			widget.NewForm(
-				widget.NewFormItem("author", widget.NewLabel("Pan J")),
+				widget.NewFormItem("author", widget.NewLabel(APP_AUTHOR)),
 				widget.NewFormItem("repository", urlLink),
-				widget.NewFormItem("version", widget.NewLabel("v0.0.1")),
+				widget.NewFormItem("version", widget.NewLabel(APP_VER)),
 			),
 			layout.NewSpacer(),
 			widget.NewLabel("Configuration"),
