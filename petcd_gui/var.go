@@ -16,6 +16,7 @@ var (
 	g_funUpdateTitle    func()
 	g_connected         bool = false
 	g_logData                = binding.NewString()
+	g_logLast                = binding.NewString()
 )
 
 func getConf() *ConfigEtcdGUI       { return g_conf }
@@ -32,3 +33,4 @@ func setFunUpdateTitle(f func())    { g_funUpdateTitle = f }
 func setConnected(c bool)           { g_connected = c }
 func getConnected() bool            { return g_connected }
 func getLogData() binding.String    { return g_logData }
+func getLogLast() binding.String    { return g_logLast }

@@ -30,6 +30,7 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 		guiButDel      *widget.Button      = nil // 头部 删除
 		guiTreKeys     *widget.Tree        = nil // 身体 目录
 		guiLabValue    *widget.Label       = nil // 身体 值显示
+		guiLabLogLast  *widget.Label       = nil // 身体 日志最后一行
 		guiConHead     *fyne.Container     = nil // 布局 头
 		guiConBody     *container.Split    = nil // 布局 身
 		guiConAll      *fyne.Container     = nil // 布局 总
@@ -51,6 +52,7 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	initGUIHomeBody(
 		&guiTreKeys,
 		&guiLabValue,
+		&guiLabLogLast,
 		&guiConBody,
 		&guiSelSearch,
 		&guiButCollapse,
@@ -81,7 +83,7 @@ func initGUIHome(w fyne.Window) fyne.CanvasObject {
 	})
 
 	// 总布局
-	guiConAll = container.NewBorder(guiConHead, nil, nil, nil, container.NewMax(guiConBody))
+	guiConAll = container.NewBorder(guiConHead, guiLabLogLast, nil, nil, container.NewMax(guiConBody))
 	return guiConAll
 }
 
@@ -229,6 +231,7 @@ func initGUIHomeHead(w fyne.Window,
 
 func initGUIHomeBody(pGuiTreKeys **widget.Tree,
 	pGuiLabValue **widget.Label,
+	pGuiLabLogLast **widget.Label,
 	pGuiConBody **container.Split,
 	pGuiSelSearch **widget.SelectEntry,
 	pGuiButCollapse **widget.Button) {
@@ -237,6 +240,9 @@ func initGUIHomeBody(pGuiTreKeys **widget.Tree,
 
 	// 数据值
 	*pGuiLabValue = widget.NewLabelWithData(g_etcdValue)
+
+	// 日志 最后一行
+	*pGuiLabLogLast = widget.NewLabelWithData(getLogLast())
 
 	// 容器 身
 	*pGuiConBody = container.NewHSplit(*pGuiTreKeys, *pGuiLabValue)

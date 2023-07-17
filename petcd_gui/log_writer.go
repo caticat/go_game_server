@@ -1,6 +1,10 @@
 package main
 
-import "github.com/caticat/go_game_server/plog"
+import (
+	"strings"
+
+	"github.com/caticat/go_game_server/plog"
+)
 
 type PLogWriter struct {
 	m_cha chan string
@@ -24,6 +28,7 @@ func (t *PLogWriter) Write(b []byte) (int, error) {
 
 func (t *PLogWriter) run() {
 	logData := getLogData()
+	logLast := getLogLast()
 
 	for l := range t.m_cha {
 		data, err := logData.Get()
@@ -41,6 +46,11 @@ func (t *PLogWriter) run() {
 		if err = logData.Set(data); err != nil {
 			plog.Error(err)
 			return
+		}
+
+		// 最后一行日志单独显示在主界面中
+		if pos := strings.LastIndex(data[:(len(data)-1)], "\n"); pos >= 0 {
+			logLast.Set(data[pos:])
 		}
 	}
 }

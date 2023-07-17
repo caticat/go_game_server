@@ -25,9 +25,9 @@ func runGUI(err error) {
 	guiLog := initGUILog(w)
 	guiTabMain := container.NewAppTabs(
 		container.NewTabItemWithIcon("Home", theme.HomeIcon(), initGUIHome(w)),
+		container.NewTabItemWithIcon("Log", theme.DocumentIcon(), guiLog),
 		container.NewTabItemWithIcon("Setting", theme.SettingsIcon(), initGUISetting(w)),
 		container.NewTabItemWithIcon("Info", theme.InfoIcon(), initGUIInfo(w, infoData)),
-		container.NewTabItemWithIcon("Log", theme.DocumentIcon(), guiLog),
 	)
 	guiTabMain.OnSelected = func(ti *container.TabItem) {
 		iconName := ti.Icon.Name()
