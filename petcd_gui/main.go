@@ -39,6 +39,9 @@ func main() {
 func close(isExit bool) {
 	petcd.Close()
 	if isExit {
-		getApp().Quit()
+		a := getApp()
+		if !a.Driver().Device().IsMobile() {
+			a.Quit()
+		}
 	}
 }

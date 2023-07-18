@@ -10,6 +10,26 @@
 
 - `fyne package -os windows -icon assets/myapp.png`
 
+### 打包`android`的apk
+
+- 下载安装[Android Studio](https://developer.android.com/studio/index.html)
+- 在`Android Studio`中下载安装NDK(Side by Side)
+	- Tool
+		- SDK Manager
+			- SDK Tools
+				- NDK(Side by Side)
+- 添加环境变量
+	- `PATH`,这个是否可以改成Android相关的环境变量名我还没试过
+		- `C:\Users\pan\AppData\Local\Android\Sdk\platform-tools`
+	- `ANDROID_NDK_HOME`
+		- `C:\Users\pan\AppData\Local\Android\Sdk\ndk\25.2.9519653`
+- 打包
+	- `fyne package -os android -appID com.github.caticat.go_game_server.petcd_gui -icon assets/myapp.png`
+
+#### 已知问题
+
+- 安卓模拟器中运城程序后,切换其他应用程序再切换回来就黑屏了,不知道什么原因
+
 ## 测试
 
 - `winpty docker run -it --rm --network pan_network bitnami/etcd:latest etcdctl --endpoints http://pan_etcd_c1:2379,http://pan_etcd_c2:2379,http://pan_etcd_c3:2379 get "" --prefix`
@@ -51,7 +71,7 @@
 
 ## 其他
 
-### 引用库`Fyne``
+### 引用库`Fyne`
 
 #### 地址
 
