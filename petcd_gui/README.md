@@ -30,6 +30,10 @@
 
 - 安卓模拟器中运城程序后,切换其他应用程序再切换回来就黑屏了,不知道什么原因
 
+### 打包`ios`,未测试
+
+- 打包`fyne package -os ios -appID com.github.caticat.go_game_server.petcd_gui -icon assets/myapp.png`
+
 ## 测试
 
 - `winpty docker run -it --rm --network pan_network bitnami/etcd:latest etcdctl --endpoints http://pan_etcd_c1:2379,http://pan_etcd_c2:2379,http://pan_etcd_c3:2379 get "" --prefix`

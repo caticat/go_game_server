@@ -10,6 +10,8 @@ use (
 	./example/server_etcd_init
 	./petcd
 	./petcd_gui
+	./pfyne_theme_cn
+	./pgit
 	./phelp
 	./plog
 	./pnet

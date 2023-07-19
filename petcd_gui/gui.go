@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
-	ptheme "github.com/caticat/go_game_server/petcd_gui/theme"
+	"github.com/caticat/go_game_server/pfyne_theme_cn"
 	"github.com/caticat/go_game_server/phelp"
 	"github.com/caticat/go_game_server/plog"
 )
@@ -17,7 +17,7 @@ import (
 func runGUI(err error) {
 	// 窗口初始化
 	a := getApp()
-	a.Settings().SetTheme(ptheme.NewThemeCN())
+	a.Settings().SetTheme(pfyne_theme_cn.NewThemeCN())
 	w := a.NewWindow(WINDOW_TITLE)
 	w.SetMaster()
 

@@ -1,11 +1,11 @@
-package ptheme
+package pfyne_theme_cn
 
 import (
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-	pfont "github.com/caticat/go_game_server/petcd_gui/font"
+	pfont "github.com/caticat/go_game_server/pfyne_theme_cn/font"
 )
 
 type ThemeCN struct{}
