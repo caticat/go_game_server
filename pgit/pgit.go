@@ -61,6 +61,10 @@ func (p *PGit) Commit(comment string) error {
 		Author: author,
 	})
 
+	if err == git.ErrEmptyCommit {
+		return nil
+	}
+
 	return err
 }
 
@@ -79,7 +83,11 @@ func (p *PGit) Pull() error {
 		return err
 	}
 
-	return wor.Pull(&git.PullOptions{})
+	err = wor.Pull(&git.PullOptions{})
+	if err == git.NoErrAlreadyUpToDate {
+		return nil
+	}
+	return err
 }
 
 func (p *PGit) Push() error {

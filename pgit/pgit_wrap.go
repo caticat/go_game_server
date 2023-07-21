@@ -55,8 +55,12 @@ func (p *PGit) push(force bool) error {
 		return ErrConfigNotFound
 	}
 
-	return rep.Push(&git.PushOptions{
+	err := rep.Push(&git.PushOptions{
 		Force: force,
 		Auth:  conf.Auth,
 	})
+	if err == git.NoErrAlreadyUpToDate {
+		return nil
+	}
+	return err
 }
