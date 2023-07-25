@@ -2,6 +2,7 @@ package ppath
 
 import (
 	"path"
+	"regexp"
 	"sort"
 
 	"github.com/caticat/go_game_server/phelp"
@@ -34,7 +35,22 @@ func (p *PPath) Refresh() error {
 	return nil
 }
 
-func (p *PPath) KeysAll() []string { return p.m_mapFiles.M_sliKey }
+func (p *PPath) KeysAll(filter string) []string {
+	if filter == "" {
+		return p.m_mapFiles.M_sliKey
+	} else {
+		sliRet := make([]string, 0, len(p.m_mapFiles.M_sliKey))
+		for _, key := range p.m_mapFiles.M_sliKey {
+			match, _ := regexp.MatchString(filter, key)
+			if !match {
+				continue
+			}
+			sliRet = append(sliRet, key)
+		}
+
+		return sliRet
+	}
+}
 func (p *PPath) Keys(basePath string) []string {
 	basePath = p.FixPath(basePath)
 	if _, ok := p.m_mapFiles.Get(basePath); !ok {

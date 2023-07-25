@@ -401,6 +401,7 @@ func initGUISettingImport(w fyne.Window, pGuiBorImport **fyne.Container) {
 				if f == nil { // 主动关闭
 					return
 				}
+				defer f.Close()
 				bs, err := io.ReadAll(f)
 				if err != nil {
 					plog.ErrorLn(err)

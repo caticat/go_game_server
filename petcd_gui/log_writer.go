@@ -50,7 +50,7 @@ func (t *PLogWriter) run() {
 
 		// 最后一行日志单独显示在主界面中
 		if pos := strings.LastIndex(data[:(len(data)-1)], "\n"); pos >= 0 {
-			logLast.Set(data[pos:])
+			logLast.Set(data[pos:(len(data) - 1)])
 		}
 	}
 }

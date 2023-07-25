@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"os"
+	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/caticat/go_game_server/petcd"
 	"github.com/caticat/go_game_server/petcd/pdata"
+	"github.com/caticat/go_game_server/phelp"
+	"github.com/caticat/go_game_server/phelp/ppath"
 	"github.com/caticat/go_game_server/plog"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"go.etcd.io/etcd/clientv3"
@@ -21,7 +26,10 @@ func main() {
 	// testPETCDFlushDB()
 	// testPETCDCompact()
 	// testPETCDPrefix()
-	testPETCDAuth()
+	// testPETCDAuth()
+	// testCP()
+	// testIsSubDir()
+	testMv()
 }
 
 func testETCD() {
@@ -52,7 +60,7 @@ func testETCD() {
 		plog.FatalLn("error:", err)
 	}
 	for i, p := range resp.Kvs {
-		plog.InfoF("[%d]%q->%q\n", i, string(p.Key), string(p.Value))
+		plog.InfoF("[%d]%q->%q/n", i, string(p.Key), string(p.Value))
 	}
 }
 
@@ -135,7 +143,7 @@ func testPETCD() {
 	mapServer := make(map[string]string)
 	petcd.GetPrefix("/server/", mapServer)
 	for k, v := range mapServer {
-		plog.InfoF("%v[%v]->%v\n", k, petcd.TrimPrefix(k, "/server/"), v)
+		plog.InfoF("%v[%v]->%v/n", k, petcd.TrimPrefix(k, "/server/"), v)
 	}
 
 	time.Sleep(time.Second * 10)
@@ -163,7 +171,7 @@ func testPETCDWatch() {
 
 	petcd.WatchPrefix("/server/", func(eventType mvccpb.Event_EventType, prefix string, kv *mvccpb.KeyValue) {
 		chaFunc <- func() {
-			plog.InfoF("server change,type:%v,prefix:%q,kv:%v\n", eventType, prefix, kv)
+			plog.InfoF("server change,type:%v,prefix:%q,kv:%v/n", eventType, prefix, kv)
 			s := petcd.TrimPrefix(string(kv.Key), prefix)
 			switch eventType {
 			case mvccpb.PUT:
@@ -265,4 +273,67 @@ func testPETCDAuth() {
 	}
 
 	plog.DebugLn(mapResult)
+}
+
+func testCP() {
+	from := "E:/pan/study_notes/go/git/tmp/a"
+	to := "E:/pan/study_notes/go/git"
+	if _, err := phelp.Cp(from, to, phelp.PBinFlag_Recursive|phelp.PBinFlag_Force); err != nil {
+		plog.ErrorLn(err)
+		return
+	}
+	plog.InfoLn("copy done")
+}
+
+func testIsSubDir() {
+	d, err := os.Getwd()
+	if err != nil {
+		plog.InfoLn("err:", err)
+		return
+	}
+	plog.InfoLn("base:", d)
+	a := "./data"
+	a, err = filepath.Abs(path.Join(d, a))
+	if err != nil {
+		plog.InfoLn("err:", err)
+		return
+	}
+
+	f := func(s string) string {
+		if filepath.IsAbs(s) {
+			return s
+		}
+		s, err := filepath.Abs(path.Join(a, s))
+		if err != nil {
+			plog.InfoLn("err:", err)
+			return s
+		}
+		return s
+	}
+
+	plog.InfoLn(ppath.IsSubDir(a, f("b/c")))
+	plog.InfoLn(ppath.IsSubDir(a, f("../b/c")))
+	plog.InfoLn(ppath.IsSubDir(a, f("../data/b/c")))
+	plog.InfoLn(ppath.IsSubDir(a, f("/data/b/c")))
+	plog.InfoLn(ppath.IsSubDir(a, f("e:/data/b/c")))
+
+	plog.InfoLn(filepath.Abs("a/b/c"))
+	plog.InfoLn(filepath.Abs("e:/a/b/c"))
+}
+
+func mv(from, to string, flags phelp.PBinFlags) error {
+	if _, err := phelp.Cp(from, to, flags); err != nil {
+		return err
+	}
+	return phelp.Rm(from)
+}
+
+func testMv() {
+	from := "D:/pan/Desktop/tmp/tmp/tmp/data/a.txt"
+	to := "D:/pan/Desktop/tmp/tmp/tmp/data/z.txt"
+	if err := mv(from, to, phelp.PBinFlag_Recursive|phelp.PBinFlag_Force); err != nil {
+		plog.ErrorLn(err)
+		return
+	}
+	plog.InfoLn("mv done")
 }
