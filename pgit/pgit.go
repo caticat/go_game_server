@@ -83,7 +83,9 @@ func (p *PGit) Pull() error {
 		return err
 	}
 
-	err = wor.Pull(&git.PullOptions{})
+	err = wor.Pull(&git.PullOptions{
+		Auth: conf.Auth,
+	})
 	if err == git.NoErrAlreadyUpToDate {
 		return nil
 	}

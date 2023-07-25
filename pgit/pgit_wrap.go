@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 )
 
 func (t *PGit) getConf() *PGitConf         { return t.m_conf }
@@ -27,7 +28,7 @@ func (t *PGit) openIfNilClone() error {
 		t.setRep(rep)
 		return nil
 	}
-	if err != git.ErrRepositoryNotExists {
+	if (err != git.ErrRepositoryNotExists) && (err != transport.ErrEmptyRemoteRepository) {
 		return err
 	}
 
