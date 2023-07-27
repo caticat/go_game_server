@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type PGit struct {
@@ -98,6 +99,35 @@ func (p *PGit) Push() error {
 
 func (p *PGit) PushForce() error {
 	return p.push(true)
+}
+
+func (p *PGit) Log(logNum int) ([]*object.Commit, error) {
+	if logNum <= 0 {
+		return nil, nil
+	}
+	rep := p.getRep()
+	if rep == nil {
+		return nil, ErrRepositoryNotOpen
+	}
+	iteLog, err := rep.Log(&git.LogOptions{
+		All:   true,
+		Order: git.LogOrderCommitterTime,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	sliLogs := make([]*object.Commit, 0, logNum)
+	iteLog.ForEach(func(log *object.Commit) error {
+		if logNum <= 0 {
+			return NotErrNumLimit
+		}
+		logNum--
+		sliLogs = append(sliLogs, log)
+		return nil
+	})
+
+	return sliLogs, nil
 }
 
 func (p *PGit) ResetToRemote() error {

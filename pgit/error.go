@@ -8,4 +8,5 @@ var (
 	ErrRepositoryNotOpen       = errors.New("repository not open")
 
 	NotErrRefFound = errors.New("not error, ref found")
+	NotErrNumLimit = errors.New("not error, number limit")
 )
