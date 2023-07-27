@@ -1,7 +1,6 @@
 package pgit
 
 import (
-	"os"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -50,9 +49,9 @@ func (t *PGit) openIfNilClone() error {
 
 	// 本地仓库没有,拉取远程仓库
 	rep, err = git.PlainClone(conf.Local, false, &git.CloneOptions{
-		URL:      conf.Repository,
-		Progress: os.Stdout,
-		Auth:     conf.Auth,
+		URL: conf.Repository,
+		// Progress: os.Stdout,
+		Auth: conf.Auth,
 	})
 	if err != nil {
 		return err
