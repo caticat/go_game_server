@@ -64,6 +64,9 @@ func Ls(dir string, files map[string]bool, flags PBinFlags) error {
 // 删除文件/文件夹下所有内容 递归
 func Rm(dir string) error {
 	dir = Format(dir)
+	if dir == PATH_SEPARATOR {
+		return ErrorCannotRmRoot
+	}
 	return os.RemoveAll(dir)
 }
 

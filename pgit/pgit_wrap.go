@@ -2,6 +2,7 @@ package pgit
 
 import (
 	"os"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -25,6 +26,21 @@ func (t *PGit) openIfNilClone() error {
 	// 打开本地仓库
 	rep, err := git.PlainOpen(conf.Local)
 	if err == nil {
+		// 本地远程仓库地址不同的校验
+		sliRemote, err := rep.Remotes()
+		if err != nil {
+			return err
+		}
+		isSameRepo := false
+		for _, remote := range sliRemote {
+			if strings.Contains(remote.String(), conf.Repository) {
+				isSameRepo = true
+				break
+			}
+		}
+		if !isSameRepo {
+			return ErrRepositoryRemoteLocalConflict
+		}
 		t.setRep(rep)
 		return nil
 	}
