@@ -11,5 +11,5 @@ func IsSubDir(absBase, absSub string) bool {
 		return false
 	}
 
-	return (strings.Index(rel, "..") < 0)
+	return (!strings.Contains(rel, ".."))
 }

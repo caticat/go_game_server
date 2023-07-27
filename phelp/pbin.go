@@ -19,6 +19,8 @@ const (
 
 // 获取文件夹下所有内容
 func Ls(dir string, files map[string]bool, flags PBinFlags) error {
+	dir = Format(dir)
+
 	// 文件文件夹判断
 	staFrom, err := os.Stat(dir)
 	if err != nil {
@@ -61,11 +63,15 @@ func Ls(dir string, files map[string]bool, flags PBinFlags) error {
 
 // 删除文件/文件夹下所有内容 递归
 func Rm(dir string) error {
+	dir = Format(dir)
 	return os.RemoveAll(dir)
 }
 
 // 复制文件,返回成功复制的文件名列表(不包含文件夹)
 func Cp(from, to string, flags PBinFlags) ([]string, error) {
+	from = Format(from)
+	to = Format(to)
+
 	files := make(map[string]bool)
 	if err := Ls(from, files, flags); err != nil {
 		return nil, err
@@ -138,6 +144,9 @@ func Cp(from, to string, flags PBinFlags) ([]string, error) {
 }
 
 func Mv(from, to string, flags PBinFlags) error {
+	from = Format(from)
+	to = Format(to)
+
 	if sliCpFiles, err := Cp(from, to, flags); err != nil {
 		return err
 	} else {
@@ -149,4 +158,8 @@ func Mv(from, to string, flags PBinFlags) error {
 	}
 
 	return nil
+}
+
+func Format(pathFrom string) string {
+	return strings.ReplaceAll(pathFrom, "\\", "/")
 }

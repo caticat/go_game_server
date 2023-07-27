@@ -329,8 +329,10 @@ func mv(from, to string, flags phelp.PBinFlags) error {
 }
 
 func testMv() {
-	from := "D:/pan/Desktop/tmp/tmp/tmp/data/a.txt"
-	to := "D:/pan/Desktop/tmp/tmp/tmp/data/z.txt"
+	from := "C:\\Users\\pan\\AppData\\Roaming\\fyne\\github.com.caticat.go_git_notebook_gui\\local.repo\\myapp.png"
+	to := "C:\\Users\\pan\\AppData\\Roaming\\fyne\\github.com.caticat.go_git_notebook_gui\\local.repo\\a"
+	from = phelp.Format(from)
+	to = phelp.Format(to)
 	if err := mv(from, to, phelp.PBinFlag_Recursive|phelp.PBinFlag_Force); err != nil {
 		plog.ErrorLn(err)
 		return

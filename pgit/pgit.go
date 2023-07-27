@@ -110,7 +110,9 @@ func (p *PGit) ResetToRemote() error {
 		return ErrConfigNotFound
 	}
 
-	err := rep.Fetch(&git.FetchOptions{})
+	err := rep.Fetch(&git.FetchOptions{
+		Auth: conf.Auth,
+	})
 	if err != git.NoErrAlreadyUpToDate {
 		return err
 	}
